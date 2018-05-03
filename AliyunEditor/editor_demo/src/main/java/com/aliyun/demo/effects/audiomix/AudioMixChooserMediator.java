@@ -108,14 +108,14 @@ public class AudioMixChooserMediator extends BaseChooser implements OnItemClickL
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.music_view, container);
+        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.aliyun_svideo_music_view, container);
         return mView;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mViewPager = (ViewPager) view.findViewById(R.id.music_contet_container);
+        mViewPager = (ViewPager) view.findViewById(R.id.music_content_container);
         mVoiceBtn = (ImageView) view.findViewById(R.id.voice_btn);
         mVoiceBtn.setOnClickListener(this);
         mMusicWeightSeekBar = (SeekBar) view.findViewById(R.id.music_weight);
@@ -159,9 +159,9 @@ public class AudioMixChooserMediator extends BaseChooser implements OnItemClickL
         mLocalMusicRecyclerView.setAdapter(mLocalMusicAdapter);
         mLocalMusicRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         mViewPager.setAdapter(new MusicPagerAdapter());
-        mTabPageIndicator = (PagerSlidingTabStrip) view.findViewById(R.id.music_contet_container_indicator);
-        mTabPageIndicator.setTextColorResource(R.color.tab_text_color_selector);
-        mTabPageIndicator.setTabViewId(R.layout.layout_tab_top);
+        mTabPageIndicator = (PagerSlidingTabStrip) view.findViewById(R.id.music_content_container_indicator);
+        mTabPageIndicator.setTextColorResource(R.color.aliyun_svideo_tab_text_color_selector);
+        mTabPageIndicator.setTabViewId(R.layout.aliyun_svideo_layout_tab_top);
         mTabPageIndicator.setViewPager(mViewPager);
         if(mEditorService != null && mEditorService.isFullScreen()) {
             mOnlineMusicRecyclerView.setBackgroundColor(getResources().getColor(R.color.action_bar_bg_50pct));

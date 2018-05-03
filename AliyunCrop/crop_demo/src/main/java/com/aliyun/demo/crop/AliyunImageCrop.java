@@ -24,7 +24,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.aliyun.common.global.Version;
-import com.aliyun.common.project.MediaType;
 import com.aliyun.common.utils.DensityUtil;
 import com.aliyun.common.utils.FileUtils;
 import com.aliyun.common.utils.ToastUtil;
@@ -41,6 +40,7 @@ import com.aliyun.struct.common.CropKey;
 import com.aliyun.struct.common.ScaleMode;
 import com.aliyun.struct.common.VideoQuality;
 import com.aliyun.struct.snap.AliyunSnapVideoParam;
+import com.aliyun.svideo.sdk.external.struct.MediaType;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
@@ -109,7 +109,7 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
 
     private ScaleMode cropMode = ScaleMode.PS;
 
-    private MediaScannerConnection msc;
+//    private MediaScannerConnection msc;
 
     private boolean isCropping = false;
     private String mSuffix;
@@ -122,7 +122,7 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_image_crop);
+        setContentView(R.layout.aliyun_svideo_activity_image_crop);
         screenWidth = getResources().getDisplayMetrics().widthPixels;
         screenHeight = getResources().getDisplayMetrics().heightPixels;
         crop = AliyunCropCreator.getCropInstance(this);
@@ -130,8 +130,10 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
         getData();
         initView();
         initSurface();
-        msc = new MediaScannerConnection(this, null);
-        msc.connect();
+//        if(msc == null) {
+//            msc = new MediaScannerConnection(this, null);
+//            msc.connect();
+//        }
         Glide.with(getApplicationContext()).load("file://" + path).into(mImageView);
         frame.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -140,6 +142,7 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
                 frameHeight = frame.getHeight();
                 if (cropMode == SCALE_CROP) {
                     scaleCrop(mImageWidth, mImageHeight);
+
                 } else if (cropMode == SCALE_FILL) {
                     scaleFill(mImageWidth, mImageHeight);
                 }
@@ -290,11 +293,14 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        msc.disconnect();
+//        if(msc != null) {
+//            msc.disconnect();
+//            msc = null;
+//        }
         AliyunCropCreator.destroyCropInstance();
     }
 
-    private void scaleFill(int imageWidth, int imageHeight) {
+    private void scaleCrop(int imageWidth, int imageHeight) {
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mImageView.getLayoutParams();
         int s = Math.min(imageWidth, imageHeight);
         int b = Math.max(imageWidth, imageHeight);
@@ -325,12 +331,12 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
         }
         layoutParams.setMargins(0, 0, 0, 0);
         mImageView.setLayoutParams(layoutParams);
-        cropMode = SCALE_FILL;
+        cropMode = SCALE_CROP;
         transFormBtn.setActivated(false);
         resetScroll();
     }
 
-    private void scaleCrop(int imageWidth, int imageHeight) {
+    private void scaleFill(int imageWidth, int imageHeight) {
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mImageView.getLayoutParams();
         int s = Math.min(imageWidth, imageHeight);
         int b = Math.max(imageWidth, imageHeight);
@@ -362,14 +368,19 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
         }
         layoutParams.setMargins(0, 0, 0, 0);
         mImageView.setLayoutParams(layoutParams);
-        cropMode = SCALE_CROP;
+        cropMode = SCALE_FILL;
         transFormBtn.setActivated(true);
         resetScroll();
     }
 
 
     private void scanFile() {
-        msc.scanFile(outputPath, mMimeType);
+        MediaScannerConnection.scanFile(getApplicationContext(),
+                new String[]{outputPath},
+                new String[]{mMimeType}, null);
+//        if(msc != null && msc.isConnected()) {
+//            msc.scanFile(outputPath, mMimeType);
+//        }
     }
 
     @Override
@@ -435,6 +446,7 @@ public class AliyunImageCrop extends Activity implements HorizontalListView.OnSc
                 scaleCrop(mImageWidth, mImageHeight);
             } else if (cropMode == SCALE_CROP) {
                 scaleFill(mImageWidth, mImageHeight);
+
             }
         } else if (v == nextBtn) {
             startCrop();

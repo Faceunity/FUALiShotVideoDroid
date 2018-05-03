@@ -9,7 +9,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.util.ArrayMap;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 
@@ -38,10 +37,10 @@ public class EffectManagerActivity extends ActionBarActivity implements View.OnC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_effect_manager);
+        setContentView(R.layout.aliyun_svideo_activity_effect_manager);
         setActionBarTitle(getString(R.string.effect_mananger_nav_edit));
-//        setActionBarRightView(R.mipmap.icon_effect_manage);
-        setActionBarLeftView(R.mipmap.icon_back);
+//        setActionBarRightView(R.mipmap.aliyun_svideo_icon_effect_manage);
+        setActionBarLeftView(R.mipmap.aliyun_svideo_icon_back);
         setActionBarLeftViewVisibility(View.VISIBLE);
         setActionBarTitleVisibility(View.VISIBLE);
         setActionBarRightViewVisibility(View.GONE);

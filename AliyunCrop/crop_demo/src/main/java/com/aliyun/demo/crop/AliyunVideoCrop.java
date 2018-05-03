@@ -18,6 +18,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -133,14 +134,14 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
 
     private FrameExtractor10 kFrame;
 
-    private MediaScannerConnection msc;
+//    private MediaScannerConnection msc;
 
     private Handler playHandler = new Handler(this);
 
     private int currentPlayPos;
 
     private boolean isPause = false;
-    private boolean isCroping = false;
+    private boolean isCropping = false;
     private boolean needPlayStart = false;
     private boolean isUseGPU = false;
 
@@ -152,7 +153,7 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_crop);
+        setContentView(R.layout.aliyun_svideo_activity_crop);
         screenWidth = getResources().getDisplayMetrics().widthPixels;
         screenHeight = getResources().getDisplayMetrics().heightPixels;
         crop = AliyunCropCreator.getCropInstance(this);
@@ -160,8 +161,10 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
         getData();
         initView();
         initSurface();
-        msc = new MediaScannerConnection(this, null);
-        msc.connect();
+//        if(msc == null) {
+//            msc = new MediaScannerConnection(getApplicationContext(), null);
+//            msc.connect();
+//        }
     }
 
     private void getData() {
@@ -375,7 +378,9 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
             mEndTime = seekPos;
         }
         dirationTxt.setText((float) (mEndTime - mStartTime) / 1000 + "");
-        mPlayer.seekTo((int) seekPos);
+        if(mPlayer != null){
+            mPlayer.seekTo((int) seekPos);
+        }
     }
 
     @Override
@@ -419,7 +424,7 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        msc.disconnect();
+//        msc.disconnect();
         AliyunCropCreator.destroyCropInstance();
     }
 
@@ -498,7 +503,11 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
 
 
     private void scanFile() {
-        msc.scanFile(outputPath, "video/mp4");
+        MediaScannerConnection.scanFile(getApplicationContext(),
+                new String[]{outputPath}, new String[]{"video/mp4"}, null);
+//        if(msc != null && msc.isConnected()) {
+//            msc.scanFile(outputPath, "video/mp4");
+//        }
     }
 
     private void playVideo() {
@@ -537,7 +546,7 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
 
     @Override
     public void onBackPressed() {
-        if (isCroping) {
+        if (isCropping) {
             crop.cancel();
         } else {
             super.onBackPressed();
@@ -625,7 +634,7 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
     @Override
     public void onClick(View v) {
         if (v == transFormBtn) {
-            if (isCroping) {
+            if (isCropping) {
                 return;
             }
             if (cropMode == SCALE_FILL) {
@@ -655,10 +664,10 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
     private void startCrop() {
         if (frameWidth == 0 || frameHeight == 0) {
             ToastUtil.showToast(this, R.string.aliyun_video_crop_error);
-            isCroping = false;
+            isCropping = false;
             return;
         }
-        if (isCroping) {
+        if (isCropping) {
             return;
         }
         final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) textureview.getLayoutParams();
@@ -772,7 +781,7 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
         cropParam.setFillColor(Color.BLACK);
 //        if ((mEndTime - mStartTime) /  1000 / 60 >= 5) {
 //            ToastUtil.showToast(this, R.string.aliyun_video_duration_5min_tip);
-//            isCroping = false;
+//            isCropping = false;
 //            return;
 //        }
         mCropProgressBg.setVisibility(View.VISIBLE);
@@ -795,12 +804,14 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
             ToastUtil.showToast(this, getString(R.string.aliyun_video_crop_error) + "错误码 ：" + ret);
             return;
         }
-        isCroping = true;
+        startCropTimestamp = System.currentTimeMillis();
+        Log.d("CROP_COST", "start : " + startCropTimestamp);
+        isCropping = true;
         seekBar.setSliceBlocked(true);
 
 
     }
-
+    long startCropTimestamp;
     private void deleteFile() {
         new AsyncTask() {
             @Override
@@ -823,6 +834,7 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
 
     @Override
     public void onError(final int code) {
+        Log.d("CROP_COST", "crop failed : " + code);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -840,12 +852,14 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
                 setResult(Activity.RESULT_CANCELED, getIntent());
             }
         });
-        isCroping = false;
+        isCropping = false;
 
     }
 
     @Override
     public void onComplete(long duration) {
+        long time = System.currentTimeMillis();
+        Log.d("CROP_COST", "completed : " + (time - startCropTimestamp));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -856,12 +870,13 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
                 Intent intent = getIntent();
                 intent.putExtra(CropKey.RESULT_KEY_CROP_PATH, outputPath);
                 intent.putExtra(CropKey.RESULT_KEY_DURATION, mEndTime - mStartTime);
+                intent.putExtra(CropKey.RESULT_KEY_FILE_PATH, path);
                 setResult(Activity.RESULT_OK, intent);
                 finish();
 //                progressDialog.dismiss();
             }
         });
-        isCroping = false;
+        isCropping = false;
     }
 
     @Override
@@ -877,7 +892,7 @@ public class AliyunVideoCrop extends Activity implements TextureView.SurfaceText
         deleteFile();
         setResult(Activity.RESULT_CANCELED);
         finish();
-        isCroping = false;
+        isCropping = false;
     }
 
     @Override

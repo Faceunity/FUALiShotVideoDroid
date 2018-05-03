@@ -100,7 +100,7 @@ public class MoreCaptionAdapter extends RecyclerView.Adapter<MoreCaptionAdapter.
                     if(mData.getData().getPreviewUrl() != null && !"".equals(mData.getData().getPreviewUrl())) {
                         PasterPreviewDialog dialog = PasterPreviewDialog.newInstance(mData.getData().getPreviewUrl(),
                                 mData.getData().getName(), mData.getData().getId());
-                        dialog.show(((MoreCaptionActivity) mContext).getSupportFragmentManager(), "caption");
+                        dialog.show(((MoreCaptionActivity) mContext).getSupportFragmentManager(), "aliyun_svideo_caption");
                     }
                 }
             });
@@ -120,16 +120,16 @@ public class MoreCaptionAdapter extends RecyclerView.Adapter<MoreCaptionAdapter.
 
     @Override
     public CaptionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_effect_manager_list_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aliyun_svideo_layout_effect_manager_list_item, parent, false);
         CaptionViewHolder holder = new CaptionViewHolder(view);
         switch (viewType) {
             case VIEW_TYPE_LOCAL:
                 holder.mTvRightButton.setText(R.string.use_effect_edit);
-                holder.mTvRightButton.setBackgroundResource(R.drawable.shape_more_paster_use_bg);
+                holder.mTvRightButton.setBackgroundResource(R.drawable.aliyun_svideo_shape_more_paster_use_bg);
                 break;
             case VIEW_TYPE_REMOTE:
                 holder.mTvRightButton.setText(R.string.download_effect_edit);
-                holder.mTvRightButton.setBackgroundResource(R.drawable.shape_more_paster_download_bg);
+                holder.mTvRightButton.setBackgroundResource(R.drawable.aliyun_svideo_shape_more_paster_download_bg);
                 break;
             default:
                 break;

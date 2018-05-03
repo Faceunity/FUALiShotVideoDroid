@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.view.ViewParent;
-import android.widget.ImageView;
 
 import com.aliyun.demo.editor.timeline.TimelineBar;
 import com.aliyun.demo.editor.timeline.TimelineOverlay;
@@ -315,7 +314,7 @@ public class PasterUISimpleImpl implements AliyunPasterBaseView {
     }
 
     public boolean isVisibleInTime(long time){
-        Log.e("TVT", "ontouch play time : " + time);
+        Log.e("TVT", "ontouch aliyun_svideo_play time : " + time);
         long start = mController.getPasterStartTime();
         long duration = mController.getPasterDuration();
         Log.e("TVT", "paster start time : " + start + " end time : " + (start + duration));
@@ -387,7 +386,7 @@ public class PasterUISimpleImpl implements AliyunPasterBaseView {
         }
         if(mTimelineOverlay == null) {
             TimelineOverlay.TimelineOverlayView overlayView = new TimelineOverlay.TimelineOverlayView() {
-                private View rootView = LayoutInflater.from(mPasterView.getContext()).inflate(R.layout.layout_timeline_overlay, null);
+                private View rootView = LayoutInflater.from(mPasterView.getContext()).inflate(R.layout.aliyun_svideo_layout_timeline_overlay, null);
 
                 @Override
                 public ViewGroup getContainer() {

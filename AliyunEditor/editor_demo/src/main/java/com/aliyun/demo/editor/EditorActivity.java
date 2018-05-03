@@ -12,15 +12,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -30,18 +29,14 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.aliyun.common.global.AliyunConfig;
 import com.aliyun.common.media.ShareableBitmap;
 import com.aliyun.common.utils.DensityUtil;
-import com.aliyun.common.utils.FileUtils;
 import com.aliyun.common.utils.StorageUtils;
 import com.aliyun.common.utils.ToastUtil;
 import com.aliyun.demo.editor.timeline.TimelineBar;
@@ -55,35 +50,44 @@ import com.aliyun.demo.effects.control.TabGroup;
 import com.aliyun.demo.effects.control.TabViewStackBinding;
 import com.aliyun.demo.effects.control.UIEditorPage;
 import com.aliyun.demo.effects.control.ViewStack;
+import com.aliyun.demo.effects.filter.AnimationFilterController;
 import com.aliyun.demo.effects.paint.PaintMenuView;
 import com.aliyun.demo.effects.paint.PaintMenuView.OnPaintOpera;
+import com.aliyun.demo.msg.Dispatcher;
+import com.aliyun.demo.msg.body.FilterTabClick;
+import com.aliyun.demo.msg.body.LongClickAnimationFilter;
+import com.aliyun.demo.msg.body.LongClickUpAnimationFilter;
+import com.aliyun.demo.msg.body.SelectColorFilter;
 import com.aliyun.demo.publish.PublishActivity;
 import com.aliyun.demo.util.Common;
 import com.aliyun.demo.widget.AliyunPasterWithImageView;
 import com.aliyun.demo.widget.AliyunPasterWithTextView;
 import com.aliyun.querrorcode.AliyunErrorCode;
 import com.aliyun.qupai.editor.AliyunICanvasController;
-import com.aliyun.qupai.editor.AliyunICompose;
 import com.aliyun.qupai.editor.AliyunIEditor;
-import com.aliyun.qupai.editor.AliyunIExporter;
 import com.aliyun.qupai.editor.AliyunIPlayer;
 import com.aliyun.qupai.editor.AliyunIThumbnailFetcher;
 import com.aliyun.qupai.editor.AliyunPasterController;
 import com.aliyun.qupai.editor.AliyunPasterManager;
 import com.aliyun.qupai.editor.AliyunThumbnailFetcherFactory;
-import com.aliyun.qupai.editor.OnComposeCallback;
+import com.aliyun.qupai.editor.OnAnimationFilterRestored;
 import com.aliyun.qupai.editor.OnPasterRestored;
 import com.aliyun.qupai.editor.OnPlayCallback;
 import com.aliyun.qupai.editor.OnPreparedListener;
-import com.aliyun.qupai.editor.impl.AliyunComposeFactory;
 import com.aliyun.qupai.editor.impl.AliyunEditorFactory;
-import com.aliyun.qupai.editor.impl.AliyunThumbnailFetcher;
+import com.aliyun.qupai.import_core.AliyunIImport;
+import com.aliyun.qupai.import_core.AliyunImportCreator;
+import com.aliyun.struct.common.AliyunDisplayMode;
 import com.aliyun.struct.common.AliyunVideoParam;
 import com.aliyun.struct.common.ScaleMode;
 import com.aliyun.struct.common.VideoDisplayMode;
 import com.aliyun.struct.effect.EffectBean;
+import com.aliyun.struct.effect.EffectFilter;
 import com.aliyun.struct.effect.EffectPaster;
 import com.aliyun.struct.effect.EffectPicture;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -93,7 +97,7 @@ import java.util.List;
 
 
 public class EditorActivity extends AppCompatActivity implements
-        OnTabChangeListener, OnEffectChangeListener, BottomAnimation, View.OnClickListener {
+        OnTabChangeListener, OnEffectChangeListener, BottomAnimation, View.OnClickListener, OnAnimationFilterRestored {
     private static final String TAG = "EditorActivity";
     public static final String KEY_VIDEO_PARAM = "video_param";
     public static final String KEY_PROJECT_JSON_PATH = "project_json_path";
@@ -135,10 +139,16 @@ public class EditorActivity extends AppCompatActivity implements
     private AliyunIThumbnailFetcher mThumbnailFetcher;
     private Bitmap mWatermarkBitmap;
     private File mWatermarkFile;
+    private AnimationFilterController mAnimationFilterController;
+//    private AudioTimePicker mAudioTimePicker;
+//    private View mPicker;
+//    private EffectBean mAudioEffect;
+//    private EditText mVideoFadeIndex, mFadeDurationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Dispatcher.getInstance().register(this);
         mWatermarkFile = new File(StorageUtils.getCacheDirectory(EditorActivity.this) + "/AliyunEditorDemo/tail/logo.png");
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -147,7 +157,7 @@ public class EditorActivity extends AppCompatActivity implements
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
         mScreenWidth = point.x;
-        setContentView(R.layout.activity_editor);
+        setContentView(R.layout.aliyun_svideo_activity_editor);
         Intent intent = getIntent();
         if (intent.getStringExtra(KEY_PROJECT_JSON_PATH) != null) {
             mUri = Uri.fromFile(new File(intent.getStringExtra(KEY_PROJECT_JSON_PATH)));
@@ -175,9 +185,9 @@ public class EditorActivity extends AppCompatActivity implements
         mIvLeft = (ImageView) findViewById(R.id.iv_left);
         mTvCenter = (TextView) findViewById(R.id.tv_center);
         mIvRight = (ImageView) findViewById(R.id.iv_right);
-        mIvLeft.setImageResource(R.mipmap.icon_back);
+        mIvLeft.setImageResource(R.mipmap.aliyun_svideo_icon_back);
         mTvCenter.setText(getString(R.string.edit_nav_edit));
-        mIvRight.setImageResource(R.mipmap.icon_next);
+        mIvRight.setImageResource(R.mipmap.aliyun_svideo_icon_next);
         mIvLeft.setVisibility(View.VISIBLE);
         mIvRight.setVisibility(View.VISIBLE);
         mTvCenter.setVisibility(View.VISIBLE);
@@ -209,6 +219,42 @@ public class EditorActivity extends AppCompatActivity implements
         };
 
         mPasterContainer.setOnTouchListener(pasterTouchListener);
+
+//        mPicker = findViewById(R.id.time_picker);
+//        mPicker.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mAudioEffect.setStartTime(mAudioTimePicker.getStart());
+//                mAudioEffect.setDuration(mAudioTimePicker.getEnd() - mAudioTimePicker.getStart());
+//                mAliyunIEditor.applyMusic(mAudioEffect);
+//                mTimelineBar.resume();
+//                mPlayImage.setSelected(false);
+//                mAudioTimePicker.hideAudioTimePicker();
+//            }
+//        });
+//
+//        mVideoFadeIndex = (EditText) findViewById(R.id.fade_start);
+//        mFadeDurationView = (EditText) findViewById(R.id.fade_end);
+//
+//        View fadeCompleted = findViewById(R.id.fade_completed);
+//        fadeCompleted.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                String indexStr = mVideoFadeIndex.getText().toString();
+//                String fadeDuStr = mFadeDurationView.getText().toString();
+//
+//                if(TextUtils.isEmpty(indexStr)
+//                        || !TextUtils.isDigitsOnly(indexStr)
+//                        || TextUtils.isEmpty(fadeDuStr)
+//                        || !TextUtils.isDigitsOnly(fadeDuStr)){
+//                    return ;
+//                }
+//                int index = Integer.parseInt(indexStr);
+//                int fadeDu = Integer.parseInt(fadeDuStr);
+//
+//                mAliyunIEditor.setClipFadeDurationAndAnimation(index, fadeDu, 0, 0);
+//            }
+//        });
     }
 
     private void initGlSurfaceView() {
@@ -218,21 +264,12 @@ public class EditorActivity extends AppCompatActivity implements
             }
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) mGlSurfaceContainer.getLayoutParams();
             int rotation = mAliyunIPlayer.getRotation();
-            int vw = mAliyunIPlayer.getVideoWidth();
-            int vh = mAliyunIPlayer.getVideoHeight();
-            float vs = (float)vw / vh;
             int outputWidth = mVideoParam.getOutputWidth();
             int outputHeight = mVideoParam.getOutputHeight();
-            Intent intent = getIntent();
-            String from = intent.getStringExtra("come_from");
-            boolean needRotation = true;
             if ((rotation == 90 || rotation == 270)) {
-                needRotation = vs > 1 ? outputWidth > outputHeight :  outputHeight > outputWidth;
-                if(needRotation && TextUtils.equals(from, "recorder")){
-                    int temp = outputWidth;
-                    outputWidth = outputHeight;
-                    outputHeight = temp;
-                }
+                int temp = outputWidth;
+                outputWidth = outputHeight;
+                outputHeight = temp;
             }
 
             float percent;
@@ -241,7 +278,7 @@ public class EditorActivity extends AppCompatActivity implements
             } else {
                 percent = (float) outputHeight / outputWidth;
             }
-            if (percent < 1.5 || ((rotation == 90 || rotation == 270) && needRotation)) {
+            if (percent < 1.5 || (rotation == 90 || rotation == 270)) {
                 layoutParams.height = Math.round((float) outputHeight * mScreenWidth / outputWidth);
                 layoutParams.addRule(RelativeLayout.BELOW, R.id.bar_linear);
             } else {
@@ -279,6 +316,39 @@ public class EditorActivity extends AppCompatActivity implements
     }
 
     private void initEditor() {
+//        String[] url = new String[]{
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353293665-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353304243-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353314905-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353328222-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353342029-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353358921-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353370427-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353392072-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353399461-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353410446-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353421613-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353432714-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353443815-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353456628-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353468134-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353479188-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/1516353491112-1193959466.mp4",
+//                "/storage/emulated/0/Android/data/com.fengzhongkeji/files/2or3m/ESDzcDn2BF.mp4"
+//        };
+//        AliyunIImport aliyunIImport = AliyunImportCreator.getImportInstance(getApplicationContext());
+//        AliyunVideoParam param = new AliyunVideoParam();
+//        param.setFrameRate(25);
+//        param.setHWAutoSize(true);
+//        param.setOutputWidth(540);
+//        param.setOutputHeight(960);
+//        aliyunIImport.setVideoParam(param);
+//        MediaMetadataRetriever mr = new MediaMetadataRetriever();
+//        for(String u:url) {
+//            aliyunIImport.addVideo(u, 0, 0, 0, AliyunDisplayMode.DEFAULT);
+//        }
+//        mAliyunIEditor = AliyunEditorFactory.creatAliyunEditor(Uri.fromFile(new File(aliyunIImport.generateProjectConfigure())));
+
         mAliyunIEditor = AliyunEditorFactory.creatAliyunEditor(mUri);
         mAliyunIEditor.init(mSurfaceView);
         mAliyunIPlayer = mAliyunIEditor.createAliyunPlayer();
@@ -303,6 +373,8 @@ public class EditorActivity extends AppCompatActivity implements
 
             @Override
             public void onPrepared() {
+                mAliyunIPlayer.start();
+                mAliyunIEditor.setAnimationRestoredListener(EditorActivity.this);
                 ScaleMode mode = mVideoParam.getScaleMode();
                 if (mode != null) {
                     switch (mode) {
@@ -311,6 +383,8 @@ public class EditorActivity extends AppCompatActivity implements
                             break;
                         case PS:
                             mAliyunIPlayer.setDisplayMode(VideoDisplayMode.FILL);
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -374,13 +448,15 @@ public class EditorActivity extends AppCompatActivity implements
                         }
                     });
                 }
-//                if (mAliyunIPlayer.isPlaying()) {
-//                    mAliyunIPlayer.pause();
-//                }
+
+//                mAudioTimePicker = new AudioTimePicker(getApplicationContext(),
+//                        mPicker, mTimelineBar, mAliyunIPlayer.getDuration());
                 mTimelineBar.start();
                 mPasterManager.setDisplaySize(mPasterContainer.getWidth(),
-                                mPasterContainer.getHeight());
+                        mPasterContainer.getHeight());
                 mPasterManager.setOnPasterRestoreListener(mOnPasterRestoreListener);
+                mAnimationFilterController = new AnimationFilterController(getApplicationContext(), mTimelineBar,
+                        mAliyunIEditor, mAliyunIPlayer);
             }
         });
         mAliyunIPlayer.setOnPlayCallbackListener(new OnPlayCallback() {
@@ -388,7 +464,7 @@ public class EditorActivity extends AppCompatActivity implements
             @Override
             public void onPlayStarted() {
                 Log.d("xxx", "AliyunIPlayer onPlayStarted");
-                if(mTimelineBar != null) {
+                if (mTimelineBar != null) {
                     if (mTimelineBar.isPausing() && !mIsComposing) {
                         mTimelineBar.resume();
                     }
@@ -425,10 +501,11 @@ public class EditorActivity extends AppCompatActivity implements
                         break;
                     default:
                         ToastUtil.showToast(EditorActivity.this, R.string.play_video_error);
+                        break;
                 }
 //                mPlayImage.setEnabled(true);
-//                mAliyunIPlayer.stop();
-//                mTimelineBar.stop();
+                mAliyunIPlayer.stop();
+                mTimelineBar.stop();
 //                finish();
                 mPlayImage.setEnabled(true);
             }
@@ -444,7 +521,7 @@ public class EditorActivity extends AppCompatActivity implements
 //                mAliyunIPlayer.stop();
                 mAliyunIPlayer.start();
                 mTimelineBar.restart();
-//                Log.d(TimelineBar.TAG, "TailView play restart");
+//                Log.d(TimelineBar.TAG, "TailView aliyun_svideo_play restart");
             }
 
             @Override
@@ -456,7 +533,8 @@ public class EditorActivity extends AppCompatActivity implements
 
         mIvRight.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
+                v.setEnabled(false);
                 final AliyunIThumbnailFetcher fetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher();
                 fetcher.fromConfigJson(mUri.getPath());
                 fetcher.setParameters(mAliyunIPlayer.getVideoWidth(), mAliyunIPlayer.getVideoHeight(), AliyunIThumbnailFetcher.CropMode.Mediate, ScaleMode.LB, 1);
@@ -465,10 +543,10 @@ public class EditorActivity extends AppCompatActivity implements
                             @Override
                             public void onThumbnailReady(ShareableBitmap frameBitmap, long time) {
                                 String path = getExternalFilesDir(null) + "thumbnail.jpeg";
-                                try{
+                                try {
                                     frameBitmap.getData().compress(Bitmap.CompressFormat.JPEG, 100,
                                             new FileOutputStream(path));
-                                }catch (IOException e){
+                                } catch (IOException e) {
                                     e.printStackTrace();
                                 }
                                 Intent intent = new Intent(EditorActivity.this, PublishActivity.class);
@@ -501,7 +579,7 @@ public class EditorActivity extends AppCompatActivity implements
 //                    mCurrentEditEffect.editTimeCompleted();
 //                }
 //                dialog.show();
-//                mTimelineBar.pause();
+//                mTimelineBar.aliyun_svideo_pause();
 //                AliyunIExporter exporter = mAliyunIEditor.getExporter();
 //                File tailImg = new File(StorageUtils.getCacheDirectory(EditorActivity.this) + "/AliyunEditorDemo/tail/logo.png");
 //                if (tailImg.exists()) {
@@ -517,14 +595,14 @@ public class EditorActivity extends AppCompatActivity implements
 //                    public void onError() {
 //                        mIsComposing = false;
 //                        Log.e("COMPOSE", "compose error");
-//                        dialog.dismiss();
+//                        dialog.aliyun_svideo_dismiss();
 //                        Toast.makeText(getApplicationContext(), "合成失败", Toast.LENGTH_SHORT).show();
 //                    }
 //
 //                    @Override
 //                    public void onComplete() {
 //                        Log.e("COMPOSE", "compose finished");
-//                        dialog.dismiss();
+//                        dialog.aliyun_svideo_dismiss();
 //                        if (mMediaScanner != null) {
 //                            mMediaScanner.scanFile(path, "video/mp4");
 //                        }
@@ -580,7 +658,7 @@ public class EditorActivity extends AppCompatActivity implements
             mPasterContainer.post(new Runnable() {
                 @Override
                 public void run() {
-                    for(PasterUISimpleImpl pui : aps){
+                    for (PasterUISimpleImpl pui : aps) {
                         pui.editTimeCompleted();
                     }
                 }
@@ -632,7 +710,11 @@ public class EditorActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mAliyunIPlayer != null) {
+        if (mAnimationFilterController != null) {
+            mAnimationFilterController.destroyController();
+        }
+
+        if (mAliyunIEditor != null) {
             mAliyunIEditor.onDestroy();
         }
         if (mTimelineBar != null) {
@@ -678,6 +760,7 @@ public class EditorActivity extends AppCompatActivity implements
             case OVERLAY:
                 break;
             default:
+                break;
         }
         Log.e("editor", "====== onTabChange " + ix + " " + index);
     }
@@ -701,9 +784,27 @@ public class EditorActivity extends AppCompatActivity implements
                     mTimelineBar.resume();
                     mPlayImage.setSelected(false);
                 }
+//                mAudioEffect = effect;
+//                if (!effectInfo.isAudioMixBar) {
+//                    if(TextUtils.isEmpty(effectInfo.getPath())){
+//                        mAudioTimePicker.removeAudioTimePicker();
+//                        mPicker.performClick();
+//                    }else{
+//                        mAudioTimePicker.showAudioTimePicker();
+//                        playingPause();
+//                    }
+//
+//                }
                 break;
             case FILTER_EFFECT:
-                mAliyunIEditor.applyFilter(effect);
+                if (effect.getPath().contains("Vertigo")) {
+                    EffectFilter filter = new EffectFilter(effect.getPath());
+                    filter.setStartTime(0);
+                    filter.setDuration(5000);
+                    mAliyunIEditor.addAnimationFilter(filter);
+                } else {
+                    mAliyunIEditor.applyFilter(effect);
+                }
                 break;
             case MV:
                 if (mCurrentEditEffect != null && !mCurrentEditEffect.isPasterRemoved()) {
@@ -764,6 +865,8 @@ public class EditorActivity extends AppCompatActivity implements
                 mCanvasController.removeCanvas();
                 addPaint(mCanvasController);
                 break;
+            default:
+                break;
         }
     }
 
@@ -797,7 +900,7 @@ public class EditorActivity extends AppCompatActivity implements
 
     private PasterUIGifImpl addPaster(AliyunPasterController controller) {
         AliyunPasterWithImageView pasterView = (AliyunPasterWithImageView) View.inflate(this,
-                R.layout.qupai_paster_gif, null);
+                R.layout.aliyun_svideo_qupai_paster_gif, null);
 
         mPasterContainer.addView(pasterView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
@@ -812,7 +915,7 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private PasterUICaptionImpl addCaption(AliyunPasterController controller) {
         AliyunPasterWithImageView captionView = (AliyunPasterWithImageView) View.inflate(this,
-                R.layout.qupai_paster_caption, null);
+                R.layout.aliyun_svideo_qupai_paster_caption, null);
 //        ImageView content = (ImageView) captionView.findViewById(R.id.qupai_overlay_content_animation);
 //        Glide.with(getApplicationContext())
 //                .load("file://" + controller.getPasterIconPath())
@@ -831,7 +934,7 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private PasterUITextImpl addSubtitle(AliyunPasterController controller, boolean restore) {
         AliyunPasterWithTextView captionView = (AliyunPasterWithTextView) View.inflate(this,
-                R.layout.qupai_paster_text, null);
+                R.layout.aliyun_svideo_qupai_paster_text, null);
         mPasterContainer.addView(captionView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         return new PasterUITextImpl(captionView, controller, mTimelineBar, restore);
@@ -885,6 +988,12 @@ public class EditorActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mViewStack.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mIvRight.setEnabled(true);
     }
 
     @Override
@@ -950,6 +1059,11 @@ public class EditorActivity extends AppCompatActivity implements
     }
 
     private PasterUISimpleImpl mCurrentEditEffect;
+
+    @Override
+    public void animationFilterRestored(List<EffectFilter> animationFilters) {
+        mAnimationFilterController.restoreAnimationFilters(animationFilters);
+    }
 
     private class MyOnGestureListener extends
             GestureDetector.SimpleOnGestureListener {
@@ -1180,6 +1294,8 @@ public class EditorActivity extends AppCompatActivity implements
                         }
                     }
                     break;
+                default:
+                    break;
             }
         }
     };
@@ -1192,6 +1308,60 @@ public class EditorActivity extends AppCompatActivity implements
                 if (file.exists()) {
                     file.delete();
                 }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void onEventColorFilterSelected(SelectColorFilter selectColorFilter) {
+        EffectInfo effectInfo = selectColorFilter.getEffectInfo();
+        EffectBean effect = new EffectBean();
+        effect.setId(effectInfo.id);
+        effect.setPath(effectInfo.getPath());
+        mAliyunIEditor.applyFilter(effect);
+    }
+
+    /**
+     * 长按时需要恢复播放
+     *
+     * @param filter
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void onEventAnimationFilterLongClick(LongClickAnimationFilter filter) {
+        if (!mAliyunIPlayer.isPlaying()) {
+            playingResume();
+        }
+    }
+
+    /**
+     * 长按抬起手指需要暂停播放
+     *
+     * @param filter
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void onEventAnimationFilterClickUp(LongClickUpAnimationFilter filter) {
+        if (mAliyunIPlayer.isPlaying()) {
+            playingPause();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void onEventFilterTabClick(FilterTabClick ft) {
+        //切换到特效的tab需要暂停播放，切换到滤镜的tab需要恢复播放
+        if (mAliyunIPlayer != null) {
+            switch (ft.getPosition()) {
+                case FilterTabClick.POSITION_ANIMATION_FILTER:
+                    if (mAliyunIPlayer.isPlaying()) {
+                        playingPause();
+                    }
+                    break;
+                case FilterTabClick.POSITION_COLOR_FILTER:
+                    if (!mAliyunIPlayer.isPlaying()) {
+                        playingResume();
+                    }
+                    break;
+                default:
+                    break;
             }
         }
     }

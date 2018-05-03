@@ -7,7 +7,6 @@ package com.aliyun.demo.importer;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,9 +19,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.aliyun.common.global.AliyunConfig;
 import com.aliyun.common.utils.ToastUtil;
 import com.aliyun.demo.crop.AliyunImageCrop;
 import com.aliyun.demo.crop.AliyunVideoCrop;
@@ -47,7 +44,6 @@ import com.aliyun.demo.importer.media.MediaInfo;
 import com.aliyun.demo.importer.media.SelectedMediaAdapter;
 import com.aliyun.demo.importer.media.SelectedMediaViewHolder;
 import com.aliyun.demo.importer.media.ThumbnailGenerator;
-import com.aliyun.struct.snap.AliyunSnapVideoParam;
 
 
 public class MediaActivity extends Activity implements View.OnClickListener {
@@ -87,7 +83,7 @@ public class MediaActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.import_activity_media);
+        setContentView(R.layout.aliyun_svideo_import_activity_media);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getData();
         init();

@@ -21,6 +21,7 @@ import com.aliyun.demo.R;
 import com.aliyun.demo.recorder.util.Common;
 import com.aliyun.struct.common.ScaleMode;
 import com.aliyun.struct.common.VideoQuality;
+import com.aliyun.struct.encoder.VideoCodecs;
 import com.aliyun.struct.recorder.CameraType;
 import com.aliyun.struct.recorder.FlashType;
 import com.aliyun.struct.snap.AliyunSnapVideoParam;
@@ -32,7 +33,6 @@ import java.io.File;
  */
 
 public class RecorderSettingTest extends Activity implements View.OnClickListener{
-    String[] eff_dirs;
 
     private static final int PROGRESS_LOW = 25;
     private static final int PROGRESS_MEIDAN = 50;
@@ -49,19 +49,26 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
     private static final int PROGRESS_1_1 = 66;
     private static final int PROGRESS_9_16 = 100;
 
+    private static final int VIDEO_CODEC_HARDWARE = 0;
+    private static final int VIDEO_CODEC_OPENH264 = 1;
+    private static final int VIDEO_CODEC_FFMPEG = 2;
+
     private static final int REQUEST_RECORD = 2001;
 
-    private TextView startRecordTxt,recordResolutionTxt,videoQualityTxt,videoRatioTxt;
-    private SeekBar resolution, videoQualityBar,videoRatio;
+    private TextView mStartRecordTxt, mRecordResolutionTxt, mVideoQualityTxt, mVideoRatioTxt;
+    private SeekBar mResolutionBar, mVideoQualityBar, mVideoRatioBar; /*mVideoCodecBar*/
     private EditText minDurationEt,maxDurationEt,gopEt,mBitrateEdit;
-    private ImageView backBtn;
+    private ImageView mBackBtn;
 
-    private int resolutionMode,ratioMode;
-    private VideoQuality videoQuality;
+    private int mResolutionMode, mRatioMode;
+    private VideoQuality mVideoQuality;
+    private VideoCodecs mVideoCodec = VideoCodecs.H264_HARDWARE;
+    private String[] mEffDirs;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_recorder_setting);
+        setContentView(R.layout.aliyun_svideo_activity_recorder_setting);
         initView();
         initAssetPath();
         copyAssets();
@@ -69,24 +76,50 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
 
     private void initAssetPath(){
         String path = StorageUtils.getCacheDirectory(this).getAbsolutePath() + File.separator+ Common.QU_NAME + File.separator;
-        eff_dirs = new String[]{
-                null,
-                path + "filter/chihuang",
-                path + "filter/fentao",
-                path + "filter/hailan",
-                path + "filter/hongrun",
-                path + "filter/huibai",
-                path + "filter/jingdian",
-                path + "filter/maicha",
-                path + "filter/nonglie",
-                path + "filter/rourou",
-                path + "filter/shanyao",
-                path + "filter/xianguo",
-                path + "filter/xueli",
-                path + "filter/yangguang",
-                path + "filter/youya",
-                path + "filter/zhaoyang"
-        };
+        File filter = new File(new File(path), "filter");
+
+        String[] list = filter.list();
+        if(list == null || list.length == 0){
+            return ;
+        }
+        mEffDirs = new String[list.length + 1];
+        mEffDirs[0] = null;
+        for(int i = 0; i < list.length; i++){
+            mEffDirs[i + 1] = filter.getPath() + "/" + list[i];
+        }
+//        mEffDirs = new String[]{
+//                null,
+//                path + "filter/chihuang",
+//                path + "filter/fentao",
+//                path + "filter/hailan",
+//                path + "filter/hongrun",
+//                path + "filter/huibai",
+//                path + "filter/jingdian",
+//                path + "filter/maicha",
+//                path + "filter/nonglie",
+//                path + "filter/rourou",
+//                path + "filter/shanyao",
+//                path + "filter/xianguo",
+//                path + "filter/xueli",
+//                path + "filter/yangguang",
+//                path + "filter/youya",
+//                path + "filter/zhaoyang",
+//                path + "filter/mosaic",
+//                path + "filter/blur",
+//                path + "filter/bulge",
+//                path + "filter/false",
+//                path + "filter/gray",
+//                path + "filter/haze",
+//                path + "filter/invert",
+//                path + "filter/miss",
+//                path + "filter/pixellate",
+//                path + "filter/rgb",
+//                path + "filter/sepiatone",
+//                path + "filter/threshold",
+//                path + "filter/tone",
+//                path + "filter/vignette"
+//
+//        };
     }
 
 
@@ -102,7 +135,7 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
 
             @Override
             protected void onPostExecute(Object o) {
-                startRecordTxt.setEnabled(true);
+                mStartRecordTxt.setEnabled(true);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -112,32 +145,33 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
         maxDurationEt = (EditText) findViewById(R.id.aliyun_max_duration_edit);
         gopEt = (EditText)findViewById(R.id.aliyun_gop_edit);
         mBitrateEdit = (EditText) findViewById(R.id.aliyun_bitrate_edit);
-        startRecordTxt = (TextView)findViewById(R.id.aliyun_start_record);
-        startRecordTxt.setOnClickListener(this);
-        startRecordTxt.setEnabled(false);
-        backBtn = (ImageView) findViewById(R.id.aliyun_back);
-        backBtn.setOnClickListener(this);
-        recordResolutionTxt = (TextView) findViewById(R.id.aliyun_resolution_txt);
-        videoQualityTxt = (TextView) findViewById(R.id.aliyun_quality_txt);
-        videoRatioTxt = (TextView) findViewById(R.id.aliyun_ratio_txt);
-        resolution = (SeekBar) findViewById(R.id.aliyun_resolution_seekbar);
-        videoQualityBar = (SeekBar) findViewById(R.id.aliyun_quality_seekbar);
-        videoRatio = (SeekBar) findViewById(R.id.aliyun_ratio_seekbar);
-        resolution.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mStartRecordTxt = (TextView)findViewById(R.id.aliyun_start_record);
+        mStartRecordTxt.setOnClickListener(this);
+        mStartRecordTxt.setEnabled(false);
+        mBackBtn = (ImageView) findViewById(R.id.aliyun_back);
+        mBackBtn.setOnClickListener(this);
+        mRecordResolutionTxt = (TextView) findViewById(R.id.aliyun_resolution_txt);
+        mVideoQualityTxt = (TextView) findViewById(R.id.aliyun_quality_txt);
+        mVideoRatioTxt = (TextView) findViewById(R.id.aliyun_ratio_txt);
+        mResolutionBar = (SeekBar) findViewById(R.id.aliyun_resolution_seekbar);
+        mVideoQualityBar = (SeekBar) findViewById(R.id.aliyun_quality_seekbar);
+        mVideoRatioBar = (SeekBar) findViewById(R.id.aliyun_ratio_seekbar);
+//        mVideoCodecBar = (SeekBar) findViewById(R.id.aliyun_video_codec_seekbar);
+        mResolutionBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress <= PROGRESS_360P){
-                    resolutionMode = AliyunSnapVideoParam.RESOLUTION_360P;
-                    recordResolutionTxt.setText(R.string.aliyun_record_resolution_360p);
+                    mResolutionMode = AliyunSnapVideoParam.RESOLUTION_360P;
+                    mRecordResolutionTxt.setText(R.string.aliyun_record_resolution_360p);
                 }else if(progress > PROGRESS_360P && progress <= PROGRESS_480P){
-                    resolutionMode = AliyunSnapVideoParam.RESOLUTION_480P;
-                    recordResolutionTxt.setText(R.string.aliyun_record_resolution_480p);
+                    mResolutionMode = AliyunSnapVideoParam.RESOLUTION_480P;
+                    mRecordResolutionTxt.setText(R.string.aliyun_record_resolution_480p);
                 }else if(progress > PROGRESS_480P && progress <= PROGRESS_540P){
-                    resolutionMode = AliyunSnapVideoParam.RESOLUTION_540P;
-                    recordResolutionTxt.setText(R.string.aliyun_record_resolution_540p);
+                    mResolutionMode = AliyunSnapVideoParam.RESOLUTION_540P;
+                    mRecordResolutionTxt.setText(R.string.aliyun_record_resolution_540p);
                 }else if(progress > PROGRESS_540P){
-                    resolutionMode = AliyunSnapVideoParam.RESOLUTION_720P;
-                    recordResolutionTxt.setText(R.string.aliyun_record_resolution_720p);
+                    mResolutionMode = AliyunSnapVideoParam.RESOLUTION_720P;
+                    mRecordResolutionTxt.setText(R.string.aliyun_record_resolution_720p);
                 }
             }
 
@@ -160,21 +194,21 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
                 }
             }
         });
-        videoQualityBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mVideoQualityBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress <= PROGRESS_LOW){
-                    videoQuality = VideoQuality.LD;
-                    videoQualityTxt.setText(R.string.aliyun_video_quality_low);
+                    mVideoQuality = VideoQuality.LD;
+                    mVideoQualityTxt.setText(R.string.aliyun_video_quality_low);
                 }else if(progress > PROGRESS_LOW && progress <= PROGRESS_MEIDAN){
-                    videoQuality = VideoQuality.SD;
-                    videoQualityTxt.setText(R.string.aliyun_video_quality_meidan);
+                    mVideoQuality = VideoQuality.SD;
+                    mVideoQualityTxt.setText(R.string.aliyun_video_quality_meidan);
                 }else if(progress > PROGRESS_MEIDAN && progress <= PROGRESS_HIGH){
-                    videoQuality = VideoQuality.HD;
-                    videoQualityTxt.setText(R.string.aliyun_video_quality_high);
+                    mVideoQuality = VideoQuality.HD;
+                    mVideoQualityTxt.setText(R.string.aliyun_video_quality_high);
                 }else if(progress > PROGRESS_HIGH){
-                    videoQuality = VideoQuality.SSD;
-                    videoQualityTxt.setText(R.string.aliyun_video_quality_super);
+                    mVideoQuality = VideoQuality.SSD;
+                    mVideoQualityTxt.setText(R.string.aliyun_video_quality_super);
                 }
             }
 
@@ -197,18 +231,18 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
                 }
             }
         });
-        videoRatio.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mVideoRatioBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress <= PROGRESS_3_4){
-                    ratioMode = AliyunSnapVideoParam.RATIO_MODE_3_4;
-                    videoRatioTxt.setText(R.string.aliyun_record_ratio_3_4);
+                    mRatioMode = AliyunSnapVideoParam.RATIO_MODE_3_4;
+                    mVideoRatioTxt.setText(R.string.aliyun_record_ratio_3_4);
                 }else if(progress > PROGRESS_3_4 && progress <= PROGRESS_1_1){
-                    ratioMode = AliyunSnapVideoParam.RATIO_MODE_1_1;
-                    videoRatioTxt.setText(R.string.aliyun_record_ratio_1_1);
+                    mRatioMode = AliyunSnapVideoParam.RATIO_MODE_1_1;
+                    mVideoRatioTxt.setText(R.string.aliyun_record_ratio_1_1);
                 }else if(progress > PROGRESS_1_1 && progress <= PROGRESS_9_16){
-                    ratioMode = AliyunSnapVideoParam.RATIO_MODE_9_16;
-                    videoRatioTxt.setText(R.string.aliyun_reocrd_ratio_9_16);
+                    mRatioMode = AliyunSnapVideoParam.RATIO_MODE_9_16;
+                    mVideoRatioTxt.setText(R.string.aliyun_reocrd_ratio_9_16);
                 }
             }
 
@@ -229,13 +263,38 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
                 }
             }
         });
-        resolution.setProgress(PROGRESS_540P);
-        videoQualityBar.setProgress(PROGRESS_HIGH);
-        videoRatio.setProgress(PROGRESS_3_4);
+//        mVideoCodecBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                switch (progress) {
+//                    case VIDEO_CODEC_HARDWARE:
+//                        mVideoCodec = VideoCodecs.H264_HARDWARE;
+//                        break;
+//                    case VIDEO_CODEC_OPENH264:
+//                        mVideoCodec = VideoCodecs.H264_SOFT_OPENH264;
+//                        break;
+//                    case VIDEO_CODEC_FFMPEG:
+//                        mVideoCodec = VideoCodecs.H264_SOFT_FFMPEG;
+//                        break;
+//                }
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//            }
+//        });
+        mResolutionBar.setProgress(PROGRESS_540P);
+        mVideoQualityBar.setProgress(PROGRESS_HIGH);
+        mVideoRatioBar.setProgress(PROGRESS_3_4);
     }
     @Override
     public void onClick(View v) {
-        if(v == startRecordTxt){
+        if(v == mStartRecordTxt){
             int min = 2000;
             int max = 30000;
             int gop = 5;
@@ -269,20 +328,21 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
                 }
             }
             AliyunSnapVideoParam recordParam = new AliyunSnapVideoParam.Builder()
-                    .setResulutionMode(resolutionMode)
-                    .setRatioMode(ratioMode)
+                    .setResolutionMode(mResolutionMode)
+                    .setRatioMode(mRatioMode)
                     .setRecordMode(AliyunSnapVideoParam.RECORD_MODE_AUTO)
-                    .setFilterList(eff_dirs)
-                    .setBeautyLevel(0)
+                    .setFilterList(mEffDirs)
+                    .setBeautyLevel(80)
                     .setBeautyStatus(false)
                     .setCameraType(CameraType.FRONT)
                     .setFlashType(FlashType.ON)
                     .setNeedClip(true)
                     .setMaxDuration(max)
                     .setMinDuration(min)
-                    .setVideQuality(videoQuality)
+                    .setVideoQuality(mVideoQuality)
                     .setGop(gop)
                     .setVideoBitrate(bitrate)
+                    .setVideoCodec(mVideoCodec)
                     /**
                      * 裁剪参数
                      */
@@ -293,7 +353,7 @@ public class RecorderSettingTest extends Activity implements View.OnClickListene
                     .setCropMode(ScaleMode.PS)
                     .build();
             AliyunVideoRecorder.startRecord(this,recordParam);
-        }else if(v == backBtn){
+        }else if(v == mBackBtn){
             finish();
         }
     }

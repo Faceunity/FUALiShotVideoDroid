@@ -37,7 +37,7 @@ public abstract class PageListCallback implements PageRecyclerView.CallBack<Page
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.overlay_item_view, parent, false);
+        View view = inflater.inflate(R.layout.aliyun_svideo_overlay_item_view, parent, false);
         PageViewHolder holder = new PageViewHolder(view);
         holder.mImageView = (CircularImageView) view.findViewById(R.id.overlayout_image_source);
         return holder;

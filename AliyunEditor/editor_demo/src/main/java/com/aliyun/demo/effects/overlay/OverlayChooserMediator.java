@@ -82,7 +82,7 @@ public class OverlayChooserMediator extends BaseChooser implements OnItemClickLi
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.overlay_view, container);
+        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.aliyun_svideo_overlay_view, container);
         return mView;
     }
 

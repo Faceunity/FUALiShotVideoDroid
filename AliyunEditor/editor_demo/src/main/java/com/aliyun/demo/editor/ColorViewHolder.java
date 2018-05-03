@@ -20,8 +20,6 @@ import android.widget.ImageView;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.aliyun.demo.editor.R.id.image;
-
 public class ColorViewHolder extends ColorViewPagerAdapter.ViewHolder {
     private GridView mGridView;
     private Context mContext;
@@ -43,7 +41,7 @@ public class ColorViewHolder extends ColorViewPagerAdapter.ViewHolder {
 
     @Override
     protected View onCreateView(Context context) {
-        View rootView = LayoutInflater.from(context).inflate(R.layout.layout_color_tab_content, null, false);
+        View rootView = LayoutInflater.from(context).inflate(R.layout.aliyun_svideo_layout_color_tab_content, null, false);
         mGridView = (GridView) rootView.findViewById(R.id.grid_view);
         return rootView;
     }
@@ -130,7 +128,7 @@ public class ColorViewHolder extends ColorViewPagerAdapter.ViewHolder {
         private View select;
 
         ColorItemViewMediator(ViewGroup parent) {
-            root = View.inflate(parent.getContext(), R.layout.item_qupai_textcolor, null);
+            root = View.inflate(parent.getContext(), R.layout.aliyun_svideo_item_qupai_textcolor, null);
             mIvColor = (ImageView) root.findViewById(R.id.iv_color);
             select = root.findViewById(R.id.selected);
 

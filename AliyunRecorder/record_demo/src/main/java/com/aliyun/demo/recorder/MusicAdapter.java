@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.aliyun.demo.R;
@@ -31,7 +30,7 @@ public class MusicAdapter extends RecyclerView.Adapter implements View.OnClickLi
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        MusicViewHolder holder = new MusicViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_music_item, parent, false));
+        MusicViewHolder holder = new MusicViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.aliyun_svideo_layout_music_item, parent, false));
         return holder;
     }
 

@@ -29,7 +29,7 @@ public class GalleryDirChooser {
                              final MediaStorage storage){
         this.anchor = anchor;
         RecyclerView recyclerView = (RecyclerView)View.inflate(context,
-                R.layout.layout_qupai_effect_container_normal, null);
+                R.layout.aliyun_svideo_layout_qupai_effect_container_normal, null);
         adapter = new GalleryDirAdapter(thumbnailGenerator);
         recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
         recyclerView.setAdapter(adapter);

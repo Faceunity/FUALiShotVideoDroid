@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,15 +127,15 @@ public class TimelineBar {
                 switch (newState) {
                     case RecyclerView.SCROLL_STATE_IDLE:
 //                        if (mScrollState == RecyclerView.SCROLL_STATE_SETTLING) {//快速拖拽导致的自动移动，即将结束
-                            Message msg = mUIHandler.obtainMessage(WHAT_TIMELINE_FINISH_SEEK);
-                            Bundle data = new Bundle();
-                            data.putLong(KEY_DURATION, mCurrDuration);
-                            msg.setData(data);
-                            mUIHandler.sendMessage(msg);
-                            mThumbnailView.updateDuration(mCurrDuration);
-                            for (TimelineOverlay overlay : mOverlayList) {
-                                overlay.requestLayout();
-                            }
+                        Message msg = mUIHandler.obtainMessage(WHAT_TIMELINE_FINISH_SEEK);
+                        Bundle data = new Bundle();
+                        data.putLong(KEY_DURATION, mCurrDuration);
+                        msg.setData(data);
+                        mUIHandler.sendMessage(msg);
+                        mThumbnailView.updateDuration(mCurrDuration);
+                        for (TimelineOverlay overlay : mOverlayList) {
+                            overlay.requestLayout();
+                        }
 //                        }
 //                        Log.d(TAG, "ScrollStateChanged SCROLL_STATE_IDLE");
                         break;
@@ -167,7 +168,7 @@ public class TimelineBar {
                 mCurrDuration = duration;
                 mThumbnailView.updateDuration(duration);
                 int length = mOverlayList.size();
-                for (int i=0;i<length;i++) {
+                for (int i = 0; i < length; i++) {
                     mOverlayList.get(i).requestLayout();
                 }
             }
@@ -175,6 +176,9 @@ public class TimelineBar {
     }
 
     private float getTimelineBarViewWidth() {
+        if (mThumbnailView.getThumbnailView().getAdapter() == null) {
+            return 0;
+        }
         if (mTimelineBarViewWidth == 0) {
             this.mThumbnailNum = (mThumbnailView.getThumbnailView().getAdapter().getItemCount() - 2);
             this.mTimelineBarViewWidth = mThumbnailNum * mSingleViewWidth;
@@ -188,20 +192,27 @@ public class TimelineBar {
         Log.d("XXX", "add TimelineBar OverlayView");
         mThumbnailParentView.addView(overlayView);
         final View view = tailView.getView();
-        overlayView.post(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-                layoutParams.leftMargin = calculateTailViewPosition(tailView);
-                view.requestLayout();
-                overlay.setVisibility(true);
-            }
-        });
+//        if (view != null) {
+            overlayView.post(new Runnable() {
+                @Override
+                public void run() {
+                    ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+                    layoutParams.leftMargin = calculateTailViewPosition(tailView);
+                    view.requestLayout();
+                    overlay.setVisibility(true);
+
+                }
+            });
+//        }
     }
 
     int calculateTailViewPosition(TimelineOverlayHandleView tailView) {
-        return (int) (mTimelineBarViewDisplayWidth / 2 - tailView.getView().getMeasuredWidth()
-                + duration2Distance(tailView.getDuration()) - mCurrScroll);
+        if(tailView.getView() != null) {
+            return (int) (mTimelineBarViewDisplayWidth / 2 - tailView.getView().getMeasuredWidth()
+                    + duration2Distance(tailView.getDuration()) - mCurrScroll);
+        }else {
+            return 0;
+        }
     }
 
 
@@ -220,7 +231,7 @@ public class TimelineBar {
         synchronized (mCurrDurationLock) {
             mCurrDuration = duration;
         }
-        if(duration == 0) {
+        if (duration == 0) {
             Log.d(TAG, "duration  == 0");
         }
         float rate = duration * 1.0f / mTotalDuration;
@@ -231,7 +242,7 @@ public class TimelineBar {
         data.putBoolean(KEY_NEED_CALLBACK, needCallback);
         msg.setData(data);
         mUIHandler.sendMessage(msg);
-        Log.d(TAG, "TimelineBar seek to duration = " + duration + ", rate = " + rate);
+//        Log.d(TAG, "TimelineBar seek to duration = " + duration + ", rate = " + rate);
     }
 
     public void start() {
@@ -249,16 +260,16 @@ public class TimelineBar {
         }
     }
 
-    public boolean isPausing(){
+    public boolean isPausing() {
 //        Log.d(TAG, "TimelineBar isPausing");
-        if(mPlayThread != null) {
+        if (mPlayThread != null) {
             return mPlayThread.isPausing();
         }
         return false;
     }
 
     public void pause() {
-        Log.d(TAG, "TimelineBar pause");
+        Log.d(TAG, "TimelineBar aliyun_svideo_pause");
         if (mPlayThread != null) {
             mPlayThread.pause();
         }
@@ -354,9 +365,9 @@ public class TimelineBar {
                 mState = STATE_STOPPING;
                 mStateLock.notify();
             }
-            try{
+            try {
                 this.join();
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
@@ -382,8 +393,9 @@ public class TimelineBar {
         return overlay;
     }
 
+
     public void removeOverlay(TimelineOverlay overlay) {
-        if(overlay != null) {
+        if (overlay != null) {
             Log.d("XXX", "remove TimelineBar Overlay");
             mThumbnailParentView.removeView(overlay.getOverlayView());
         }
@@ -407,6 +419,7 @@ public class TimelineBar {
 
     public interface TimelineBarSeekListener {
         void onTimelineBarSeek(long duration);
+
         void onTimelineBarSeekFinish(long duration);
     }
 

@@ -51,10 +51,11 @@ public class Common {
     private static Object object = new Object();
     private static View mView;
 
-    public final static String QU_FILTER = "filter";
-    public final static String QU_MV = "mv";
-    public final static String QU_CAPTION = "caption";
-    public final static String QU_OVERLAY = "overlay";
+    public final static String QU_COLOR_FILTER = "filter";
+    public final static String QU_ANIMATION_FILTER = "animation_filter";
+    public final static String QU_MV = "aliyun_svideo_mv";
+    public final static String QU_CAPTION = "aliyun_svideo_caption";
+    public final static String QU_OVERLAY = "aliyun_svideo_overlay";
     public final static String QU_TAIL_IMG = "tail_img/qupai-logo.png";
 
     private final static String MV1_1 = "folder1.1";
@@ -223,9 +224,23 @@ public class Common {
         }
     }
 
-    public static List<String> getFilterList() {
+    public static List<String> getColorFilterList() {
         List<String> list = new ArrayList<>();
-        File file = new File(QU_DIR, QU_FILTER);
+        File file = new File(QU_DIR, QU_COLOR_FILTER);
+        if(file.exists() && file.isDirectory()) {
+            File[] files = file.listFiles();
+            for(File fileTemp : files) {
+                if(fileTemp.exists()) {
+                    list.add(fileTemp.getAbsolutePath());
+                }
+            }
+        }
+        return list;
+    }
+
+    public static List<String> getAnimationFilterList() {
+        List<String> list = new ArrayList<>();
+        File file = new File(QU_DIR, QU_ANIMATION_FILTER);
         if(file.exists() && file.isDirectory()) {
             File[] files = file.listFiles();
             for(File fileTemp : files) {
@@ -245,6 +260,7 @@ public class Common {
             if(files == null) {
                 return;
             }
+
             for(File fs : files) {
                 if(fs.exists() && fs.isDirectory()) {
                     String name = fs.getName();
@@ -252,11 +268,12 @@ public class Common {
                     if(filesTemp == null) {
                         return;
                     }
+                    int id = 103;
                     for(File fileTemp : filesTemp) {
                         FileDownloaderModel model = new FileDownloaderModel();
                         model.setEffectType(EffectService.EFFECT_MV);
                         model.setName(name);
-                        model.setId(103);
+                        model.setId(id);
                         model.setPath(fs.getAbsolutePath());
                         if(path == null || "".equals(path)) {
                             path = fileTemp.getAbsolutePath() + File.separator + "icon.png";
@@ -334,9 +351,11 @@ public class Common {
                     for(PasterForm pasterForm : mPasterlList) {
                         FileDownloaderModel model = new FileDownloaderModel();
                         model.setId(paster.getId());
-                        if(icon == null || "".equals(icon)) {
-                            icon = QU_DIR + pasterForm.getIcon();
-                        }
+                        model.setPath(QU_DIR + QU_OVERLAY + File.separator + pasterForm.getName());
+
+                        //        if(icon == null || "".equals(icon)) {
+                            icon = model.getPath() + "/icon.png";
+                //        }
                         model.setIcon(icon);
                         model.setDescription(paster.getDescription());
                         model.setIsnew(paster.getIsNew());
@@ -346,9 +365,8 @@ public class Common {
 
                         model.setSubid(pasterForm.getId());
                         model.setFontid(pasterForm.getFontId());
-                        model.setSubicon(QU_DIR + pasterForm.getIcon());
+                        model.setSubicon(icon);
                         model.setSubname(pasterForm.getName());
-                        model.setPath(QU_DIR + QU_OVERLAY + File.separator + pasterForm.getName());
                         model.setIsunzip(1);
 
                         model.setTaskId(FileDownloadUtils.generateId(String.valueOf(pasterForm.getId()), model.getPath()));
@@ -387,7 +405,7 @@ public class Common {
                         int len = file.getAbsolutePath().length();
                         //判断解压后的文件是否存在,截取.zip之前的字符串
                         if (!new File(file.getAbsolutePath().substring(0, len - 4)).exists()) {
-                            UnZipFolder(file.getAbsolutePath(), Common.SD_DIR + QU_NAME);
+                            unZipFolder(file.getAbsolutePath(), Common.SD_DIR + QU_NAME);
                             insertDB(file.getAbsolutePath().substring(0, len - 4));
                         }
                         synchronized (object) {
@@ -412,7 +430,7 @@ public class Common {
         }
     }
 
-    public static void UnZipFolder(String zipFileString, String outPathString) throws Exception {
+    public static void unZipFolder(String zipFileString, String outPathString) throws Exception {
         ZipInputStream inZip = new ZipInputStream(new FileInputStream(zipFileString));
         ZipEntry zipEntry;
         String szName = "";

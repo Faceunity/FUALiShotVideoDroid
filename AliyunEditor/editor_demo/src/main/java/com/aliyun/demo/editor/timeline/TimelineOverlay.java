@@ -5,6 +5,7 @@
 package com.aliyun.demo.editor.timeline;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -47,18 +48,18 @@ public class TimelineOverlay {
 
     private void initView(long startTime) {
         mSelectedMiddleView = mOverlayView.getMiddleView();
-        if(mDuration < mMinDuration) {//不满足最小时长，则默认设置为最小时长
+        if (mDuration < mMinDuration) {//不满足最小时长，则默认设置为最小时长
             mDuration = mMinDuration;
-        }else if(mMaxDuration <= mDuration) {//如果动图时长，比最大时长（一般为视频时长）还要长，则默认设置为最大时长
+        } else if (mMaxDuration <= mDuration) {//如果动图时长，比最大时长（一般为视频时长）还要长，则默认设置为最大时长
             startTime = 0;
             mDuration = mMaxDuration;
         }
-        if(mDuration+startTime > mMaxDuration) {//如果动图时长+startTime比最大时长大，则要向前移动，保证不超出范围。
+        if (mDuration + startTime > mMaxDuration) {//如果动图时长+startTime比最大时长大，则要向前移动，保证不超出范围。
 //            startTime = mMaxDuration - mDuration;//这里不能用这个策略，因为外面动图的起始时间没有更新
             mDuration = mMaxDuration - startTime;
         }
         mTailView = new TimelineOverlayHandleView(mOverlayView.getTailView(), startTime);
-        mHeadView = new TimelineOverlayHandleView(mOverlayView.getHeadView(), mDuration+startTime);
+        mHeadView = new TimelineOverlayHandleView(mOverlayView.getHeadView(), mDuration + startTime);
         mOverlayContainer = mOverlayView.getContainer();
         setVisibility(false);
         mTimelineBar.addOverlayView(mOverlayContainer, mTailView, this);
@@ -110,17 +111,19 @@ public class TimelineOverlay {
                 }
                 mDuration -= duration;
                 mTailView.changeDuration(duration);
-                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) mTailView.getView().getLayoutParams();
-                int dx = layoutParams.leftMargin;
+                if (mTailView.getView() != null) {
+                    ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) mTailView.getView().getLayoutParams();
+                    int dx = layoutParams.leftMargin;
 //                layoutParams.leftMargin = mTimelineBar.calculateTailViewPosition(mTailView);
-                requestLayout();
-                dx = layoutParams.leftMargin - dx;
+                    requestLayout();
+                    dx = layoutParams.leftMargin - dx;
 //                Log.d(TimelineBar.TAG, "TailView X = "+mTailView.getView().getX());
-                mTailView.getView().setLayoutParams(layoutParams);
-                layoutParams = (ViewGroup.MarginLayoutParams) mSelectedMiddleView.getLayoutParams();
-                layoutParams.width -= dx; // mTimelineBar.duration2Distance(mDuration);
+                    mTailView.getView().setLayoutParams(layoutParams);
+                    layoutParams = (ViewGroup.MarginLayoutParams) mSelectedMiddleView.getLayoutParams();
+                    layoutParams.width -= dx; // mTimelineBar.duration2Distance(mDuration);
 //                Log.d(TimelineBar.TAG, "MiddleView width = "+layoutParams.width);
-                mSelectedMiddleView.setLayoutParams(layoutParams);
+                    mSelectedMiddleView.setLayoutParams(layoutParams);
+                }
                 if (mSelectedDurationChange != null) {
                     mSelectedDurationChange.onDurationChange(mTailView.getDuration(), mHeadView.getDuration(),
                             mDuration);
@@ -153,8 +156,9 @@ public class TimelineOverlay {
     }
 
     public void invalidate() {
-        //首先根据duration 计算midlleView 的宽度
+        //首先根据duration 计算middleView 的宽度
         mDistance = mTimelineBar.duration2Distance(mDuration);
+        Log.d("TimelineBar", "mDistance "+mDistance);
         ViewGroup.LayoutParams layoutParams = mSelectedMiddleView.getLayoutParams();
         layoutParams.width = mDistance;
         mSelectedMiddleView.setLayoutParams(layoutParams);
@@ -175,13 +179,22 @@ public class TimelineOverlay {
     }
 
     void setVisibility(boolean isVisible) {
-        if(isVisible) {
-            mTailView.getView().setAlpha(1);
-            mHeadView.getView().setAlpha(1);
+        Log.d("TimelineBar", "set visibility visible "+isVisible);
+        if (isVisible) {
+//            if(mTailView.getView() != null) {
+                mTailView.getView().setAlpha(1);
+//            }
+//            if(mHeadView.getView() != null) {
+                mHeadView.getView().setAlpha(1);
+//            }
             mSelectedMiddleView.setAlpha(1);
-        }else {
-            mTailView.getView().setAlpha(0);
-            mHeadView.getView().setAlpha(0);
+        } else {
+//            if(mTailView.getView() != null) {
+                mTailView.getView().setAlpha(0);
+//            }
+//            if(mHeadView.getView() != null) {
+                mHeadView.getView().setAlpha(0);
+//            }
             mSelectedMiddleView.setAlpha(0);
         }
     }
@@ -200,13 +213,12 @@ public class TimelineOverlay {
     }
 
     private void setLeftMargin(View view, int leftMargin) {
-       ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-        if(layoutParams != null) {
+        ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        if (layoutParams != null) {
             layoutParams.leftMargin = leftMargin;
             view.requestLayout();
         }
     }
-
 
 
     public interface TimelineOverlayView {
@@ -222,6 +234,9 @@ public class TimelineOverlay {
     public View getOverlayView() {
         return mOverlayContainer;
     }
+    public TimelineOverlayView getTimelineOverlayView() {
+        return mOverlayView;
+    }
 
     public interface OnSelectedDurationChangeListener {
         void onDurationChange(long startTime, long endTime, long duration);
@@ -230,5 +245,11 @@ public class TimelineOverlay {
     public void setOnSelectedDurationChangeListener(OnSelectedDurationChangeListener
                                                             selectedDurationChange) {
         mSelectedDurationChange = selectedDurationChange;
+    }
+
+    public void updateDuration(long duration) {
+        mDuration = duration;
+        invalidate();
+        requestLayout();
     }
 }

@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
-import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,28 +18,18 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.aliyun.common.global.AliyunTag;
-import com.aliyun.common.global.AliyunConfig;
-import com.aliyun.common.utils.ToastUtil;
 import com.aliyun.demo.editor.R;
-import com.aliyun.demo.widget.AliyunPasterView;
 import com.aliyun.qupai.editor.AliyunICompose;
-import com.aliyun.qupai.editor.impl.AliyunComposeFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 /**
@@ -74,7 +63,7 @@ public class PublishActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_publish);
+        setContentView(R.layout.aliyun_svideo_activity_publish);
         initView();
         mConfig = getIntent().getStringExtra(KEY_PARAM_CONFIG);
         mThumbnailPath = getIntent().getStringExtra(KEY_PARAM_THUMBNAIL);
@@ -184,7 +173,7 @@ public class PublishActivity extends Activity implements View.OnClickListener {
         mPublish = (TextView) findViewById(R.id.tv_right);
         mIvLeft = (ImageView) findViewById(R.id.iv_left);
         mIvLeft.setOnClickListener(this);
-        mIvLeft.setImageResource(R.mipmap.icon_back);
+        mIvLeft.setImageResource(R.mipmap.aliyun_svideo_icon_back);
         mPublish.setText(R.string.publish);
         mIvLeft.setVisibility(View.VISIBLE);
         mPublish.setVisibility(View.VISIBLE);

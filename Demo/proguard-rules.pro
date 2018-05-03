@@ -4,7 +4,7 @@
 # You can edit the include path and order by changing the proguardFiles
 # directive in build.gradle.
 #
-# For more details, see
+# For aliyun_svideo_more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
@@ -35,7 +35,7 @@
 # You can edit the include path and order by changing the proguardFiles
 # directive in build.gradle.
 #
-# For more details, see
+# For aliyun_svideo_more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
@@ -100,6 +100,20 @@
 -keep class com.alibaba.sdk.android.vod.upload.exception.**{*;}
 -keep class com.alibaba.sdk.android.vod.upload.auth.**{*;}
 -keep class com.aliyun.auth.model.**{*;}
+-keep class component.alivc.com.facearengine.** {*;}
+-keep class com.aliyun.svideo.sdk.external.struct.**{*;}
+-keep class com.aliyun.svideo.sdk.internal.common.project.* {*;}
 
 -keep class **.R$* { *; }
 
+## Event Bus
+-keepattributes *Annotation*
+-keepclassmembers class ** {
+    @org.greenrobot.eventbus.Subscribe <methods>;
+}
+-keep enum org.greenrobot.eventbus.ThreadMode { *; }
+
+# Only required if you use AsyncExecutor
+-keepclassmembers class * extends org.greenrobot.eventbus.util.ThrowableFailureEvent {
+    <init>(java.lang.Throwable);
+}

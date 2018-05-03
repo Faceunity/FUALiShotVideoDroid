@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="com.aliyun.dpa:oss-android-sdk-2.4.4">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/.gradle-build/AliyunEditor/editor_demo/intermediates/exploded-aar/com.aliyun.dpa/oss-android-sdk/2.4.4/res" />
+      <root url="jar://$PROJECT_DIR$/.gradle-build/AliyunEditor/editor_demo/intermediates/exploded-aar/com.aliyun.dpa/oss-android-sdk/2.4.4/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

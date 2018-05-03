@@ -11,9 +11,6 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.LayoutInflaterCompat;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.Spanned;
@@ -120,7 +117,7 @@ public class TextDialog extends DialogFragment {
                              Bundle savedInstanceState) {
 
         View contentView = View.inflate(
-                getActivity(), R.layout.qupai_row_text_bottom, null);
+                getActivity(), R.layout.aliyun_svideo_qupai_row_text_bottom, null);
 
         mEditInfo = (EditTextInfo) getArguments().getSerializable("edit");
         if (mEditInfo == null) {
@@ -686,7 +683,7 @@ public class TextDialog extends DialogFragment {
         private FontForm fontInfo;
 
         public FontItemViewMediator(ViewGroup parent) {
-            root = View.inflate(parent.getContext(), R.layout.item_qupai_font_effect, null);
+            root = View.inflate(parent.getContext(), R.layout.aliyun_svideo_item_qupai_font_effect, null);
             select = root.findViewById(R.id.selected);
             image = (ImageView) root.findViewById(R.id.font_item_image);
             indiator = (ImageView) root.findViewById(R.id.indiator);

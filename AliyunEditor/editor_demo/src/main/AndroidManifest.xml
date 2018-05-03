@@ -13,11 +13,11 @@
             android:screenOrientation="portrait"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-            <!--<intent-filter>-->
+            <!--<intent-aliyun_svideo_filter>-->
                 <!--<action android:name="com.duanqu.qupai.action.editor"/>-->
                 <!--<data android:scheme="file"/>-->
                 <!--<category android:name="android.intent.category.DEFAULT"/>-->
-            <!--</intent-filter>-->
+            <!--</intent-aliyun_svideo_filter>-->
             <intent-filter>
                 <action android:name="com.duanqu.qupai.action.editor"/>
                 <!--<data android:scheme="content" android:host="com.duanqu.qusdkdemo.fileprovider"-->

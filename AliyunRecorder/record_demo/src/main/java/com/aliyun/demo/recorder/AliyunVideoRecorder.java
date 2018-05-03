@@ -45,13 +45,15 @@ import com.aliyun.struct.common.AliyunVideoParam;
 import com.aliyun.struct.common.ScaleMode;
 import com.aliyun.struct.common.VideoQuality;
 import com.aliyun.struct.effect.EffectFilter;
+import com.aliyun.struct.encoder.VideoCodecs;
 import com.aliyun.struct.recorder.CameraParam;
 import com.aliyun.struct.recorder.CameraType;
 import com.aliyun.struct.recorder.FlashType;
 import com.aliyun.struct.recorder.MediaInfo;
 import com.aliyun.struct.snap.AliyunSnapVideoParam;
-import com.faceunity.wrapper.FaceunityControlView;
-import com.faceunity.wrapper.FaceunityWrapper;
+import com.faceunity.beautycontrolview.BeautyControlView;
+import com.faceunity.beautycontrolview.FURenderer;
+import com.faceunity.wrapper.faceunity;
 import com.qu.preview.callback.OnFrameCallBack;
 import com.qu.preview.callback.OnTextureIdCallBack;
 
@@ -62,7 +64,7 @@ import java.util.List;
 
 
 public class AliyunVideoRecorder extends Activity implements View.OnClickListener, View.OnTouchListener, ScaleGestureDetector.OnScaleGestureListener, GestureDetector.OnGestureListener {
-    private static final String TAG = AliyunVideoRecorder.class.getSimpleName();
+
     private static final int EFFECT_BEAUTY_LEVEL = 80;
     private static final int TIMELINE_HEIGHT = 20;
 
@@ -84,13 +86,14 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
 
     private int mResolutionMode;
-    private int minDuration;
-    private int maxDuration;
-    private int gop;
+    private int mMinDuration;
+    private int mMaxDuration;
+    private int mGop;
     private int mBitrate;
     private int mBeautyLevel;
-    private int recordMode;
-    private VideoQuality videoQuality = VideoQuality.HD;
+    private int mRecordMode;
+    private VideoQuality mVideoQuality = VideoQuality.HD;
+    private VideoCodecs mVideoCodec = VideoCodecs.H264_HARDWARE;
     private int mRatioMode = AliyunSnapVideoParam.RATIO_MODE_3_4;
     private int mSortMode = AliyunSnapVideoParam.SORT_MODE_MERGE;
     private AliyunIRecorder mRecorder;
@@ -106,18 +109,19 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
     private CameraType mCameraType = CameraType.FRONT;
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
-    private float scaleFactor;
-    private float lastScaleFactor;
-    private float exposureCompensationRatio = 0.5f;
+    private float mScaleFactor;
+    private float mLastScaleFactor;
+    private float mExposureCompensationRatio = 0.5f;
     private boolean isOnMaxDuration;
     private boolean isOpenFailed;
     private boolean isRecording = false;
     private AliyunVideoParam mVideoParam;
-    private OrientationDetector orientationDetector;
-    private int tintColor, timelineDelBgColor, timelineBgColor, timelinePosY, lightDisableRes, lightSwitchRes;
-    private long downTime;
-    private String[] filterList;
-    private int filterIndex = 0;
+    private OrientationDetector mOrientationDetector;
+    private int mTintColor, mTimelineDelBgColor,
+            mTimelineBgColor, mTimelinePosY, mLightDisableRes, mLightSwitchRes;
+    private long mDownTime;
+    private String[] mFilterList;
+    private int mFilterIndex = 0;
     private TextView mFilterTxt;
     private boolean isNeedClip;
     private boolean isNeedGallery;
@@ -126,15 +130,17 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
     private int mFrame = 25;
     private ScaleMode mCropMode = ScaleMode.PS;
-    private int minCropDuration = 2000;
-    private int maxVideoDuration = 10000;
-    private int minVideoDuration = 2000;
+    private int mMinCropDuration = 2000;
+    private int mMaxVideoDuration = 10000;
+    private int mMinVideoDuration = 2000;
 
-    private int galleryVisibility;
+    private int mGalleryVisibility;
 
-    private FaceunityWrapper mFaceunityWrapper;
+    private FURenderer mFURenderer;
+
+    private BeautyControlView mFaceunityControlView;
+
     private boolean isDestory = false;
-    private FaceunityControlView mFaceunityControlView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -142,79 +148,83 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_recorder_demo);
+        setContentView(R.layout.aliyun_svideo_activity_recorder_demo);
         getStyleParam();
         initOrientationDetector();
         getData();
         initView();
-        mFaceunityControlView = (FaceunityControlView) findViewById(R.id.FaceunityControlView);
-        mFaceunityWrapper = new FaceunityWrapper(this, Camera.CameraInfo.CAMERA_FACING_FRONT);
-        mFaceunityControlView.setOnViewEventListener(mFaceunityWrapper.initUIEventListener());
+
+        mFURenderer = new FURenderer.Builder(this).inputTextureType(faceunity.FU_ADM_FLAG_EXTERNAL_OES_TEXTURE).build();
+
+        mFaceunityControlView = (BeautyControlView) findViewById(R.id.faceunity_control);
+        mFaceunityControlView.setOnFaceUnityControlListener(mFURenderer);
+
         initSDK();
         reSizePreview();
-        msc = new MediaScannerConnection(this, null);
+        msc = new MediaScannerConnection(this,null);
         msc.connect();
     }
 
-    public static void startRecordForResult(Activity activity, int requestCode, AliyunSnapVideoParam param) {
-        Intent intent = new Intent(activity, AliyunVideoRecorder.class);
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_RESOLUTION, param.getResolutionMode());
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_RATIO, param.getRatioMode());
-        intent.putExtra(AliyunSnapVideoParam.RECORD_MODE, param.getRecordMode());
-        intent.putExtra(AliyunSnapVideoParam.FILTER_LIST, param.getFilterList());
-        intent.putExtra(AliyunSnapVideoParam.BEAUTY_LEVEL, param.getBeautyLevel());
-        intent.putExtra(AliyunSnapVideoParam.BEAUTY_STATUS, param.getBeautyStatus());
+    public static void startRecordForResult(Activity activity,int requestCode,AliyunSnapVideoParam param){
+        Intent intent = new Intent(activity,AliyunVideoRecorder.class);
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_RESOLUTION,param.getResolutionMode());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_RATIO,param.getRatioMode());
+        intent.putExtra(AliyunSnapVideoParam.RECORD_MODE,param.getRecordMode());
+        intent.putExtra(AliyunSnapVideoParam.FILTER_LIST,param.getFilterList());
+        intent.putExtra(AliyunSnapVideoParam.BEAUTY_LEVEL,param.getBeautyLevel());
+        intent.putExtra(AliyunSnapVideoParam.BEAUTY_STATUS,param.getBeautyStatus());
         intent.putExtra(AliyunSnapVideoParam.CAMERA_TYPE, param.getCameraType());
         intent.putExtra(AliyunSnapVideoParam.FLASH_TYPE, param.getFlashType());
-        intent.putExtra(AliyunSnapVideoParam.NEED_CLIP, param.isNeedClip());
-        intent.putExtra(AliyunSnapVideoParam.MAX_DURATION, param.getMaxDuration());
-        intent.putExtra(AliyunSnapVideoParam.MIN_DURATION, param.getMinDuration());
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_QUALITY, param.getVideoQuality());
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_GOP, param.getGop());
+        intent.putExtra(AliyunSnapVideoParam.NEED_CLIP,param.isNeedClip());
+        intent.putExtra(AliyunSnapVideoParam.MAX_DURATION,param.getMaxDuration());
+        intent.putExtra(AliyunSnapVideoParam.MIN_DURATION,param.getMinDuration());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_QUALITY,param.getVideoQuality());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_GOP,param.getGop());
         intent.putExtra(AliyunSnapVideoParam.VIDEO_BITRATE, param.getVideoBitrate());
-        intent.putExtra(AliyunSnapVideoParam.SORT_MODE, param.getSortMode());
+        intent.putExtra(AliyunSnapVideoParam.SORT_MODE,param.getSortMode());
 
 
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE, param.getFrameRate());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE,param.getFrameRate());
         intent.putExtra(AliyunSnapVideoParam.CROP_MODE, param.getScaleMode());
-        intent.putExtra(AliyunSnapVideoParam.MIN_CROP_DURATION, param.getMinCropDuration());
-        intent.putExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION, param.getMinVideoDuration());
-        intent.putExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION, param.getMaxVideoDuration());
+        intent.putExtra(AliyunSnapVideoParam.MIN_CROP_DURATION,param.getMinCropDuration());
+        intent.putExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION,param.getMinVideoDuration());
+        intent.putExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION,param.getMaxVideoDuration());
         intent.putExtra(AliyunSnapVideoParam.SORT_MODE, param.getSortMode());
-        activity.startActivityForResult(intent, requestCode);
+        activity.startActivityForResult(intent,requestCode);
     }
 
-    public static void startRecord(Context context, AliyunSnapVideoParam param) {
-        Intent intent = new Intent(context, AliyunVideoRecorder.class);
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_RESOLUTION, param.getResolutionMode());
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_RATIO, param.getRatioMode());
-        intent.putExtra(AliyunSnapVideoParam.RECORD_MODE, param.getRecordMode());
-        intent.putExtra(AliyunSnapVideoParam.FILTER_LIST, param.getFilterList());
-        intent.putExtra(AliyunSnapVideoParam.BEAUTY_LEVEL, param.getBeautyLevel());
-        intent.putExtra(AliyunSnapVideoParam.BEAUTY_STATUS, param.getBeautyStatus());
+    public static void startRecord(Context context,AliyunSnapVideoParam param){
+        Intent intent = new Intent(context,AliyunVideoRecorder.class);
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_RESOLUTION,param.getResolutionMode());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_RATIO,param.getRatioMode());
+        intent.putExtra(AliyunSnapVideoParam.RECORD_MODE,param.getRecordMode());
+        intent.putExtra(AliyunSnapVideoParam.FILTER_LIST,param.getFilterList());
+        intent.putExtra(AliyunSnapVideoParam.BEAUTY_LEVEL,param.getBeautyLevel());
+        intent.putExtra(AliyunSnapVideoParam.BEAUTY_STATUS,param.getBeautyStatus());
         intent.putExtra(AliyunSnapVideoParam.CAMERA_TYPE, param.getCameraType());
         intent.putExtra(AliyunSnapVideoParam.FLASH_TYPE, param.getFlashType());
-        intent.putExtra(AliyunSnapVideoParam.NEED_CLIP, param.isNeedClip());
-        intent.putExtra(AliyunSnapVideoParam.MAX_DURATION, param.getMaxDuration());
-        intent.putExtra(AliyunSnapVideoParam.MIN_DURATION, param.getMinDuration());
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_QUALITY, param.getVideoQuality());
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_GOP, param.getGop());
+        intent.putExtra(AliyunSnapVideoParam.NEED_CLIP,param.isNeedClip());
+        intent.putExtra(AliyunSnapVideoParam.MAX_DURATION,param.getMaxDuration());
+        intent.putExtra(AliyunSnapVideoParam.MIN_DURATION,param.getMinDuration());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_QUALITY,param.getVideoQuality());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_GOP,param.getGop());
         intent.putExtra(AliyunSnapVideoParam.VIDEO_BITRATE, param.getVideoBitrate());
-        intent.putExtra(AliyunSnapVideoParam.SORT_MODE, param.getSortMode());
+        intent.putExtra(AliyunSnapVideoParam.SORT_MODE,param.getSortMode());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_CODEC, param.getVideoCodec());
 
 
-        intent.putExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE, param.getFrameRate());
+        intent.putExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE,param.getFrameRate());
         intent.putExtra(AliyunSnapVideoParam.CROP_MODE, param.getScaleMode());
-        intent.putExtra(AliyunSnapVideoParam.MIN_CROP_DURATION, param.getMinCropDuration());
-        intent.putExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION, param.getMinVideoDuration());
-        intent.putExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION, param.getMaxVideoDuration());
+        intent.putExtra(AliyunSnapVideoParam.MIN_CROP_DURATION,param.getMinCropDuration());
+        intent.putExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION,param.getMinVideoDuration());
+        intent.putExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION,param.getMaxVideoDuration());
         intent.putExtra(AliyunSnapVideoParam.SORT_MODE, param.getSortMode());
 
 //        intent.putExtra(AliyunConfig.KEY_FROM, "com.duanqu.qupai.action.recorder.setting");
         context.startActivity(intent);
     }
 
-    public static String getVersion() {
+    public static String getVersion(){
         return Version.VERSION;
     }
 
@@ -223,14 +233,14 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 R.attr.qusnap_tint_color, R.attr.qusnap_timeline_del_backgound_color,
                 R.attr.qusnap_timeline_backgound_color, R.attr.qusnap_time_line_pos_y,
                 R.attr.qusnap_switch_light_icon_disable, R.attr.qusnap_switch_light_icon,
-                R.attr.qusnap_gallery_icon_visibility});
-        tintColor = a.getResourceId(0, R.color.aliyun_record_fill_progress);
-        timelineDelBgColor = a.getResourceId(1, android.R.color.holo_red_dark);
-        timelineBgColor = a.getResourceId(2, R.color.aliyun_editor_overlay_line);
-        timelinePosY = (int) a.getDimension(3, 100f);
-        lightDisableRes = a.getResourceId(4, R.mipmap.icon_light_dis);
-        lightSwitchRes = a.getResourceId(5, R.drawable.switch_light_selector);
-        galleryVisibility = a.getInt(6, 0);
+        R.attr.qusnap_gallery_icon_visibility});
+        mTintColor = a.getResourceId(0, R.color.aliyun_record_fill_progress);
+        mTimelineDelBgColor = a.getResourceId(1, android.R.color.holo_red_dark);
+        mTimelineBgColor = a.getResourceId(2, R.color.aliyun_editor_overlay_line);
+        mTimelinePosY = (int) a.getDimension(3,100f);
+        mLightDisableRes = a.getResourceId(4, R.mipmap.aliyun_svideo_icon_light_dis);
+        mLightSwitchRes = a.getResourceId(5, R.drawable.aliyun_svideo_switch_light_selector);
+        mGalleryVisibility = a.getInt(6,0);
         a.recycle();
     }
 
@@ -248,18 +258,18 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 timeLineParams.addRule(RelativeLayout.BELOW, R.id.aliyun_preview);
                 durationTxtParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 durationTxtParams.addRule(RelativeLayout.ABOVE, R.id.aliyun_record_timeline);
-                timeLineParams.topMargin = -timelinePosY;
+                timeLineParams.topMargin = -mTimelinePosY;
                 mToolBar.setBackgroundColor(getResources().getColor(R.color.aliyun_transparent));
                 mRecorderBar.setBackgroundColor(getResources().getColor(R.color.aliyun_transparent));
-                mRecordTimelineView.setColor(tintColor, timelineDelBgColor, R.color.qupai_black_opacity_70pct, timelineBgColor);
+                mRecordTimelineView.setColor(mTintColor, mTimelineDelBgColor, R.color.qupai_black_opacity_70pct, mTimelineBgColor);
                 break;
             case AliyunSnapVideoParam.RATIO_MODE_3_4:
                 int barHeight = getVirtualBarHeight();
-                float ratio = (float) screenHeight / screenWidth;
+                float ratio = (float)screenHeight /screenWidth;
                 previewParams = new RelativeLayout.LayoutParams(screenWidth, screenWidth * 4 / 3);
-                if (barHeight > 0 || ratio < (16f / 9.2f)) {
+                if(barHeight > 0 || ratio < (16f / 9.2f)){
                     mToolBar.setBackgroundColor(getResources().getColor(R.color.aliyun_tools_bar_color));
-                } else {
+                }else{
                     previewParams.addRule(RelativeLayout.BELOW, R.id.aliyun_tools_bar);
                     mToolBar.setBackgroundColor(getResources().getColor(R.color.aliyun_transparent));
                 }
@@ -267,9 +277,9 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 timeLineParams.addRule(RelativeLayout.BELOW, R.id.aliyun_preview);
                 durationTxtParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 durationTxtParams.addRule(RelativeLayout.ABOVE, R.id.aliyun_record_timeline);
-                timeLineParams.topMargin = -timelinePosY;
+                timeLineParams.topMargin = -mTimelinePosY;
                 mRecorderBar.setBackgroundColor(getResources().getColor(R.color.aliyun_transparent));
-                mRecordTimelineView.setColor(tintColor, timelineDelBgColor, R.color.qupai_black_opacity_70pct, timelineBgColor);
+                mRecordTimelineView.setColor(mTintColor, mTimelineDelBgColor, R.color.qupai_black_opacity_70pct, mTimelineBgColor);
                 break;
             case AliyunSnapVideoParam.RATIO_MODE_9_16:
                 previewParams = new RelativeLayout.LayoutParams(screenWidth, screenWidth * 16 / 9);
@@ -278,12 +288,12 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 }
                 timeLineParams = new RelativeLayout.LayoutParams(screenWidth, TIMELINE_HEIGHT);
                 timeLineParams.addRule(RelativeLayout.ABOVE, R.id.aliyun_record_layout);
-                timeLineParams.bottomMargin = timelinePosY;
+                timeLineParams.bottomMargin = mTimelinePosY;
                 durationTxtParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 durationTxtParams.addRule(RelativeLayout.ABOVE, R.id.aliyun_record_timeline);
                 mToolBar.setBackgroundColor(getResources().getColor(R.color.aliyun_tools_bar_color));
                 mRecorderBar.setBackgroundColor(getResources().getColor(R.color.aliyun_tools_bar_color));
-                mRecordTimelineView.setColor(tintColor, timelineDelBgColor, R.color.qupai_black_opacity_70pct, R.color.aliyun_qupai_transparent);
+                mRecordTimelineView.setColor(mTintColor, mTimelineDelBgColor, R.color.qupai_black_opacity_70pct, R.color.aliyun_qupai_transparent);
                 break;
         }
         if (previewParams != null) {
@@ -292,18 +302,18 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
         if (timeLineParams != null) {
             mRecordTimelineView.setLayoutParams(timeLineParams);
         }
-        if (durationTxtParams != null) {
+        if(durationTxtParams != null){
             mRecordTimeTxt.setLayoutParams(durationTxtParams);
         }
     }
 
     private void initOrientationDetector() {
-        orientationDetector = new OrientationDetector(getApplicationContext());
+        mOrientationDetector = new OrientationDetector(getApplicationContext());
     }
 
     public int getVirtualBarHeight() {
         int vh = 0;
-        WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
         DisplayMetrics dm = new DisplayMetrics();
         try {
@@ -338,15 +348,15 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
     private void initView() {
         mGlSurfaceView = (AliyunSVideoGlSurfaceView) findViewById(R.id.aliyun_preview);
-//        mGlSurfaceView.setOnTouchListener(this);
+        mGlSurfaceView.setOnTouchListener(this);
         mSwitchRatioBtn = (ImageView) findViewById(R.id.aliyun_switch_ratio);
         mSwitchRatioBtn.setOnClickListener(this);
         mSwitchBeautyBtn = (ImageView) findViewById(R.id.aliyun_switch_beauty);
-//        mSwitchBeautyBtn.setOnClickListener(this);
+        mSwitchBeautyBtn.setOnClickListener(this);
         mSwitchCameraBtn = (ImageView) findViewById(R.id.aliyun_switch_camera);
         mSwitchCameraBtn.setOnClickListener(this);
         mSwitchLightBtn = (ImageView) findViewById(R.id.aliyun_switch_light);
-        mSwitchLightBtn.setImageResource(lightDisableRes);
+        mSwitchLightBtn.setImageResource(mLightDisableRes);
         mSwitchLightBtn.setOnClickListener(this);
         mBackBtn = (ImageView) findViewById(R.id.aliyun_back);
         mBackBtn.setOnClickListener(this);
@@ -357,10 +367,10 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
         mCompleteBtn = (ImageView) findViewById(R.id.aliyun_complete_btn);
         mCompleteBtn.setOnClickListener(this);
         mRecordTimelineView = (RecordTimelineView) findViewById(R.id.aliyun_record_timeline);
-        mRecordTimelineView.setColor(tintColor, timelineDelBgColor, R.color.qupai_black_opacity_70pct, timelineBgColor);
+        mRecordTimelineView.setColor(mTintColor, mTimelineDelBgColor, R.color.qupai_black_opacity_70pct, mTimelineBgColor);
         mRecordTimeTxt = (TextView) findViewById(R.id.aliyun_record_time);
         mGalleryBtn = (ImageView) findViewById(R.id.aliyun_icon_default);
-        if (!isNeedGallery) {
+        if(!isNeedGallery){
             mGalleryBtn.setVisibility(View.GONE);
         }
         mToolBar = (FrameLayout) findViewById(R.id.aliyun_tools_bar);
@@ -379,7 +389,7 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
             @Override
             public void onFrameBack(byte[] bytes, int width, int height, Camera.CameraInfo info) {
                 isOpenFailed = false;
-                mFaceunityWrapper.onPreviewFrame(bytes, width, height);
+                mFURenderer.onPreviewFrame(bytes, width, height, info);
             }
 
             @Override
@@ -395,34 +405,37 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
         mRecorder.setOnTextureIdCallback(new OnTextureIdCallBack() {
             @Override
             public int onTextureIdBack(int textureId, int textureWidth, int textureHeight, float[] matrix) {
-                return mFaceunityWrapper.onDrawFrame(textureId, textureWidth, textureHeight, matrix);
+                return mFURenderer.onDrawFrame(textureId, textureWidth, textureHeight, matrix);
             }
 
             @Override
             public int onScaledIdBack(int scaledId, int textureWidth, int textureHeight, float[] matrix) {
-                if (isDestory && FaceunityWrapper.isInit) {
-                    mFaceunityWrapper.onSurfaceDestroyed();
+                if (isDestory) {
+                    mFURenderer.destroyItems();
                     isDestory = false;
                 }
                 return scaledId;
             }
         });
         mClipManager = mRecorder.getClipManager();
-        mClipManager.setMinDuration(minDuration);
-        mClipManager.setMaxDuration(maxDuration);
+        mClipManager.setMinDuration(mMinDuration);
+        mClipManager.setMaxDuration(mMaxDuration);
         mRecordTimelineView.setMaxDuration(mClipManager.getMaxDuration());
         mRecordTimelineView.setMinDuration(mClipManager.getMinDuration());
         int[] resolution = getResolution();
         final MediaInfo info = new MediaInfo();
         info.setVideoWidth(resolution[0]);
         info.setVideoHeight(resolution[1]);
+        info.setVideoCodec(mVideoCodec);
+        info.setCrf(mBitrate);
 //        EncoderDebugger debugger = EncoderDebugger.debug(this, 528, 704);
         mRecorder.setMediaInfo(info);
         mCameraType = mRecorder.getCameraCount() == 1 ? CameraType.BACK : mCameraType;
         mRecorder.setCamera(mCameraType);
-        mRecorder.setGop(gop);
+        mRecorder.setGop(mGop);
         mRecorder.setVideoBitrate(mBitrate);
-        mRecorder.setVideoQuality(videoQuality);
+        mRecorder.setVideoQuality(mVideoQuality);
+
         mRecorder.setRecordCallback(new RecordCallback() {
             @Override
             public void onComplete(boolean validClip, long clipDuration) {
@@ -433,7 +446,7 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 //                    toEditor();
 //                    toSourceType();
                 }
-                if (!isNeedClip) {
+                if(!isNeedClip){
                     toEditor();
                 }
             }
@@ -443,9 +456,9 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 scanFile(outputPath);
                 mClipManager.deleteAllPart();
                 Intent intent = new Intent();
-                intent.putExtra(OUTPUT_PATH, outputPath);
-                intent.putExtra(RESULT_TYPE, RESULT_TYPE_RECORD);
-                setResult(Activity.RESULT_OK, intent);
+                intent.putExtra(OUTPUT_PATH,outputPath);
+                intent.putExtra(RESULT_TYPE,RESULT_TYPE_RECORD);
+                setResult(Activity.RESULT_OK,intent);
                 finish();
             }
 
@@ -459,7 +472,7 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                         int min = time / 60;
                         int sec = time % 60;
                         mRecordTimeTxt.setText(String.format("%1$02d:%2$02d", min, sec));
-                        if (mRecordTimeTxt.getVisibility() != View.VISIBLE) {
+                        if(mRecordTimeTxt.getVisibility() != View.VISIBLE){
                             mRecordTimeTxt.setVisibility(View.VISIBLE);
                         }
                     }
@@ -480,19 +493,19 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
             @Override
             public void onInitReady() {
-                if (isDestory || FaceunityWrapper.isInit) {
-                    mFaceunityWrapper.onSurfaceDestroyed();
+                if (isDestory) {
+                    mFURenderer.destroyItems();
                     isDestory = false;
                 }
-                mFaceunityWrapper.onSurfaceCreated(AliyunVideoRecorder.this);
+                mFURenderer.loadItems();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (filterList != null && filterList.length > filterIndex) {
-                            EffectFilter effectFilter = new EffectFilter(filterList[filterIndex]);
+                        if(mFilterList != null && mFilterList.length > mFilterIndex){
+                            EffectFilter effectFilter = new EffectFilter(mFilterList[mFilterIndex]);
                             mRecorder.applyFilter(effectFilter);
                         }
-                        if (isBeautyOn) {
+                        if(isBeautyOn){
                             mRecorder.setBeautyLevel(mBeautyLevel);
                         }
                     }
@@ -516,19 +529,21 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
         });
 
-        setRecordMode(getIntent().getIntExtra(AliyunSnapVideoParam.RECORD_MODE, AliyunSnapVideoParam.RECORD_MODE_AUTO));
+        setRecordMode(getIntent().getIntExtra(AliyunSnapVideoParam.RECORD_MODE,AliyunSnapVideoParam.RECORD_MODE_AUTO));
         setFilterList(getIntent().getStringArrayExtra(AliyunSnapVideoParam.FILTER_LIST));
-        mBeautyLevel = getIntent().getIntExtra(AliyunSnapVideoParam.BEAUTY_LEVEL, 80);
+        mBeautyLevel = getIntent().getIntExtra(AliyunSnapVideoParam.BEAUTY_LEVEL,80);
         setBeautyLevel(mBeautyLevel);
-        setBeautyStatus(getIntent().getBooleanExtra(AliyunSnapVideoParam.BEAUTY_STATUS, true));
+        setBeautyStatus(getIntent().getBooleanExtra(AliyunSnapVideoParam.BEAUTY_STATUS,true));
         setCameraType((CameraType) getIntent().getSerializableExtra(AliyunSnapVideoParam.CAMERA_TYPE));
         setFlashType((FlashType) getIntent().getSerializableExtra(AliyunSnapVideoParam.FLASH_TYPE));
-        mRecorder.setExposureCompensationRatio(exposureCompensationRatio);
+        mRecorder.setExposureCompensationRatio(mExposureCompensationRatio);
         mRecorder.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE);
     }
 
-    private void scanFile(String path) {
-        msc.scanFile(path, "video/mp4");
+    private void scanFile(String path){
+        if(msc != null &&  msc.isConnected()) {
+            msc.scanFile(path, "video/mp4");
+        }
     }
 
     @Override
@@ -540,8 +555,8 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
          */
         mGlSurfaceView.setVisibility(View.VISIBLE);
         mRecorder.startPreview();
-        if (orientationDetector != null && orientationDetector.canDetectOrientation()) {
-            orientationDetector.enable();
+        if (mOrientationDetector != null && mOrientationDetector.canDetectOrientation()) {
+            mOrientationDetector.enable();
         }
     }
 
@@ -565,109 +580,100 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
     @Override
     protected void onStop() {
         super.onStop();
-        if (orientationDetector != null) {
-            orientationDetector.disable();
+        if (mOrientationDetector != null) {
+            mOrientationDetector.disable();
         }
     }
 
     private void getData() {
 
         mResolutionMode = getIntent().getIntExtra(AliyunSnapVideoParam.VIDEO_RESOLUTION, AliyunSnapVideoParam.RESOLUTION_540P);
-        minDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MIN_DURATION, 2000);
-        maxDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MAX_DURATION, 30000);
+        mMinDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MIN_DURATION, 2000);
+        mMaxDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MAX_DURATION, 30000);
         mRatioMode = getIntent().getIntExtra(AliyunSnapVideoParam.VIDEO_RATIO, AliyunSnapVideoParam.RATIO_MODE_3_4);
-        gop = getIntent().getIntExtra(AliyunSnapVideoParam.VIDEO_GOP, 5);
+        mGop = getIntent().getIntExtra(AliyunSnapVideoParam.VIDEO_GOP, 5);
         mBitrate = getIntent().getIntExtra(AliyunSnapVideoParam.VIDEO_BITRATE, 0);
-        videoQuality = (VideoQuality) getIntent().getSerializableExtra(AliyunSnapVideoParam.VIDEO_QUALITY);
-        if (videoQuality == null) {
-            videoQuality = VideoQuality.HD;
+        mVideoQuality = (VideoQuality) getIntent().getSerializableExtra(AliyunSnapVideoParam.VIDEO_QUALITY);
+        if(mVideoQuality == null){
+            mVideoQuality = VideoQuality.HD;
         }
-        isNeedClip = getIntent().getBooleanExtra(AliyunSnapVideoParam.NEED_CLIP, true);
-        isNeedGallery = getIntent().getBooleanExtra(NEED_GALLERY, true) && galleryVisibility == 0;
+        mVideoCodec = (VideoCodecs) getIntent().getSerializableExtra(AliyunSnapVideoParam.VIDEO_CODEC);
+        if(mVideoCodec == null) {
+            mVideoCodec = VideoCodecs.H264_HARDWARE;
+        }
+        isNeedClip = getIntent().getBooleanExtra(AliyunSnapVideoParam.NEED_CLIP,true);
+        isNeedGallery = getIntent().getBooleanExtra(NEED_GALLERY,true) && mGalleryVisibility == 0;
         mVideoParam = new AliyunVideoParam.Builder()
-                .gop(gop)
+                .gop(mGop)
                 .bitrate(mBitrate)
                 .frameRate(25)
-                .videoQuality(videoQuality)
+                .videoQuality(mVideoQuality)
+                .videoCodec(mVideoCodec)
                 .build();
 
         /**
          * 裁剪参数
          */
-        mFrame = getIntent().getIntExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE, 25);
+        mFrame = getIntent().getIntExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE,25);
         mCropMode = (ScaleMode) getIntent().getSerializableExtra(AliyunSnapVideoParam.CROP_MODE);
-        if (mCropMode == null) {
+        if(mCropMode == null){
             mCropMode = ScaleMode.PS;
         }
-        minCropDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MIN_CROP_DURATION, 2000);
-        minVideoDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION, 2000);
-        maxVideoDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION, 10000);
+        mMinCropDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MIN_CROP_DURATION,2000);
+        mMinVideoDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION,2000);
+        mMaxVideoDuration = getIntent().getIntExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION,10000);
         mSortMode = getIntent().getIntExtra(AliyunSnapVideoParam.SORT_MODE, AliyunSnapVideoParam.SORT_MODE_MERGE);
 
     }
 
-    public void setVideoParam(int resolutionMode, int minDuration, int maxDuration, int ratioMode, int gop, VideoQuality videoQuality) {
-        mResolutionMode = resolutionMode;
-        this.minDuration = minDuration;
-        this.maxDuration = maxDuration;
-        mRatioMode = ratioMode;
-        this.gop = gop;
-        this.videoQuality = videoQuality;
-        mVideoParam = new AliyunVideoParam.Builder()
-                .gop(gop)
-                .frameRate(25)
-                .videoQuality(videoQuality)
-                .build();
-    }
-
     public void setRecordMode(int recordMode) {
-        this.recordMode = recordMode;
+        this.mRecordMode = recordMode;
     }
 
-    public void setFilterList(String[] filterList) {
-        this.filterList = filterList;
+    public void setFilterList(String[] filterList){
+        this.mFilterList = filterList;
     }
 
-    public void setBeautyStatus(boolean on) {
+    public void setBeautyStatus(boolean on){
         isBeautyOn = on;
-        if (isBeautyOn) {
+        if(isBeautyOn){
             mSwitchBeautyBtn.setActivated(true);
-        } else {
+        }else{
             mSwitchBeautyBtn.setActivated(false);
         }
         mRecorder.setBeautyStatus(on);
     }
 
-    public void setBeautyLevel(int level) {
-        if (isBeautyOn) {
+    public void setBeautyLevel(int level){
+        if(isBeautyOn){
             mRecorder.setBeautyLevel(level);
         }
     }
 
-    public void setCameraType(CameraType cameraType) {
-        if (cameraType == null) {
+    public void setCameraType(CameraType cameraType){
+        if(cameraType == null){
             return;
         }
         mRecorder.setCamera(cameraType);
         mCameraType = cameraType;
-        if (mCameraType == CameraType.BACK) {
+        if(mCameraType == CameraType.BACK){
             mSwitchCameraBtn.setActivated(false);
-        } else if (mCameraType == CameraType.FRONT) {
+        }else if(mCameraType ==  CameraType.FRONT){
             mSwitchCameraBtn.setActivated(true);
         }
     }
 
-    public void setFlashType(FlashType flashType) {
-        if (flashType == null) {
+    public void setFlashType(FlashType flashType){
+        if(flashType == null){
             return;
         }
-        if (mCameraType == CameraType.FRONT) {
+        if(mCameraType == CameraType.FRONT){
             mSwitchLightBtn.setEnabled(false);
-            mSwitchLightBtn.setImageResource(lightDisableRes);
+            mSwitchLightBtn.setImageResource(mLightDisableRes);
             return;
-        } else if (mCameraType == CameraType.BACK) {
+        }else if(mCameraType ==  CameraType.BACK){
             mSwitchLightBtn.setEnabled(true);
-            mSwitchLightBtn.setImageResource(lightSwitchRes);
+            mSwitchLightBtn.setImageResource(mLightSwitchRes);
         }
         mFlashType = flashType;
         switch (mFlashType) {
@@ -723,11 +729,11 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
     @Override
     public void onBackPressed() {
-        if (!isRecording) {
+        if(!isRecording){
             setResult(Activity.RESULT_CANCELED);
             finish();
         }
-        if (mRecorder != null) {
+        if(mRecorder != null) {
             mRecorder.getClipManager().deleteAllPart();//直接返回则删除所有临时文件
         }
     }
@@ -737,8 +743,8 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
         super.onDestroy();
         mRecorder.destroy();
         msc.disconnect();
-        if (orientationDetector != null) {
-            orientationDetector.setOrientationChangedListener(null);
+        if (mOrientationDetector != null) {
+            mOrientationDetector.setOrientationChangedListener(null);
         }
         AliyunRecorderCreator.destroyRecorderInstance();
     }
@@ -755,26 +761,28 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
             }
             mRecorder.setBeautyStatus(isBeautyOn);
         } else if (v == mSwitchCameraBtn) {
+            mFURenderer.clearCameraData();
             int type = mRecorder.switchCamera();
+            mFURenderer.enableCameraData();
             if (type == CameraType.BACK.getType()) {
                 mCameraType = CameraType.BACK;
                 mSwitchLightBtn.setEnabled(true);
-                mSwitchLightBtn.setImageResource(lightSwitchRes);
+                mSwitchLightBtn.setImageResource(mLightSwitchRes);
                 mSwitchCameraBtn.setActivated(false);
                 setFlashType(mFlashType);
             } else if (type == CameraType.FRONT.getType()) {
                 mCameraType = CameraType.FRONT;
                 mSwitchLightBtn.setEnabled(false);
-                mSwitchLightBtn.setImageResource(lightDisableRes);
+                mSwitchLightBtn.setImageResource(mLightDisableRes);
                 mSwitchCameraBtn.setActivated(true);
             }
-            mFaceunityWrapper.switchCamera(mCameraType == CameraType.BACK ? Camera.CameraInfo.CAMERA_FACING_BACK : Camera.CameraInfo.CAMERA_FACING_FRONT);
+//            mFURenderer.onCameraChange(mCameraType == CameraType.FRONT ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK, 0);
         } else if (v == mSwitchLightBtn) {
             if (mFlashType == FlashType.OFF) {
                 mFlashType = FlashType.AUTO;
             } else if (mFlashType == FlashType.AUTO) {
                 mFlashType = FlashType.ON;
-            } else if (mFlashType == FlashType.ON || mFlashType == FlashType.TORCH) {
+            } else if (mFlashType == FlashType.ON || mFlashType ==  FlashType.TORCH) {
                 mFlashType = FlashType.OFF;
             }
             switch (mFlashType) {
@@ -822,7 +830,7 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 isSelected = false;
                 showComplete();
                 if (mClipManager.getDuration() == 0) {
-                    if (isNeedGallery) {
+                    if(isNeedGallery){
                         mGalleryBtn.setVisibility(View.VISIBLE);
                     }
                     mSwitchRatioBtn.setEnabled(true);
@@ -837,38 +845,39 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            if (crop == null) {
-                Toast.makeText(this, R.string.aliyun_no_import_moudle, Toast.LENGTH_SHORT).show();
+            if(crop == null){
+                Toast.makeText(this,R.string.aliyun_no_import_moudle,Toast.LENGTH_SHORT).show();
                 return;
             }
-            Intent intent = new Intent(this, crop);
-            intent.putExtra(AliyunSnapVideoParam.VIDEO_RESOLUTION, mResolutionMode);
-            intent.putExtra(AliyunSnapVideoParam.VIDEO_RATIO, mRatioMode);
-            intent.putExtra(AliyunSnapVideoParam.NEED_RECORD, false);
-            intent.putExtra(AliyunSnapVideoParam.VIDEO_QUALITY, videoQuality);
-            intent.putExtra(AliyunSnapVideoParam.VIDEO_GOP, gop);
-            intent.putExtra(AliyunSnapVideoParam.VIDEO_BITRATE, mBitrate);
-            intent.putExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE, mFrame);
-            intent.putExtra(AliyunSnapVideoParam.CROP_MODE, mCropMode);
-            intent.putExtra(AliyunSnapVideoParam.MIN_CROP_DURATION, minCropDuration);
-            intent.putExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION, minVideoDuration);
-            intent.putExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION, maxVideoDuration);
+            Intent intent = new Intent(this,crop);
+            intent.putExtra(AliyunSnapVideoParam.VIDEO_RESOLUTION,mResolutionMode);
+            intent.putExtra(AliyunSnapVideoParam.VIDEO_RATIO,mRatioMode);
+            intent.putExtra(AliyunSnapVideoParam.NEED_RECORD,false);
+            intent.putExtra(AliyunSnapVideoParam.VIDEO_QUALITY, mVideoQuality);
+            intent.putExtra(AliyunSnapVideoParam.VIDEO_GOP, mGop);
+            intent.putExtra(AliyunSnapVideoParam.VIDEO_BITRATE,mBitrate);
+            intent.putExtra(AliyunSnapVideoParam.VIDEO_FRAMERATE,mFrame);
+            intent.putExtra(AliyunSnapVideoParam.CROP_MODE,mCropMode);
+            intent.putExtra(AliyunSnapVideoParam.MIN_CROP_DURATION, mMinCropDuration);
+            intent.putExtra(AliyunSnapVideoParam.MIN_VIDEO_DURATION, mMinVideoDuration);
+            intent.putExtra(AliyunSnapVideoParam.MAX_VIDEO_DURATION, mMaxVideoDuration);
             intent.putExtra(AliyunSnapVideoParam.SORT_MODE, mSortMode);
-            startActivityForResult(intent, REQUEST_CROP);
+            intent.putExtra(AliyunSnapVideoParam.VIDEO_CODEC, mVideoCodec);
+            startActivityForResult(intent,REQUEST_CROP);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CROP && resultCode == RESULT_OK) {
-            data.putExtra(RESULT_TYPE, RESULT_TYPE_CROP);
-            setResult(Activity.RESULT_OK, data);
+        if(requestCode == REQUEST_CROP && resultCode == RESULT_OK){
+            data.putExtra(RESULT_TYPE,RESULT_TYPE_CROP);
+            setResult(Activity.RESULT_OK,data);
             finish();
         }
     }
 
     private int getPictureRotation() {
-        int orientation = orientationDetector.getOrientation();
+        int orientation = mOrientationDetector.getOrientation();
         int rotation = 90;
         if ((orientation >= 45) && (orientation < 135)) {
             rotation = 180;
@@ -898,28 +907,27 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        if (editor == null) {
+        if(editor == null){
             toStitch();
             return;
         }
-        Intent intent = new Intent(this, editor);
+        Intent intent = new Intent(this,editor);
         int[] resolutions = getResolution();
         mVideoParam.setScaleMode(ScaleMode.LB);
         mVideoParam.setOutputWidth(resolutions[0]);
         mVideoParam.setOutputHeight(resolutions[1]);
-        intent.putExtra("come_from", "recorder");
         intent.putExtra("video_param", mVideoParam);
         intent.putExtra("project_json_path", projectUri.getPath());
         intent.putStringArrayListExtra("temp_file_list", (ArrayList<String>) tempFileList);
 //        intent.putExtra(AliyunConfig.KEY_FROM, getIntent().getStringExtra(AliyunConfig.KEY_FROM));
-        try {
+        try{
             startActivity(intent);
-        } catch (ActivityNotFoundException e) {
+        }catch (ActivityNotFoundException e){
             toStitch();
         }
     }
 
-    private void toStitch() {
+    private void toStitch(){
         mRecorder.finishRecording();
         AliyunIClipManager mClipManager = mRecorder.getClipManager();
         mClipManager.deleteAllPart();//删除所有的临时文件
@@ -942,7 +950,7 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
         handleRecordStop();
     }
 
-    private boolean checkIfStartRecording() {
+    private boolean checkIfStartRecording(){
         if (mRecordBtn.isActivated()) {
             return false;
         }
@@ -1001,10 +1009,10 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 Toast.makeText(this, R.string.aliyun_camera_permission_tip, Toast.LENGTH_SHORT).show();
                 return true;
             }
-            if (recordMode == AliyunSnapVideoParam.RECORD_MODE_TOUCH) {
+            if (mRecordMode == AliyunSnapVideoParam.RECORD_MODE_TOUCH) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (!isRecording) {
-                        if (!checkIfStartRecording()) {
+                        if(!checkIfStartRecording()){
                             return false;
                         }
                         mRecordBtn.setHovered(true);
@@ -1015,9 +1023,9 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                         isRecording = false;
                     }
                 }
-            } else if (recordMode == AliyunSnapVideoParam.RECORD_MODE_PRESS) {
+            } else if (mRecordMode == AliyunSnapVideoParam.RECORD_MODE_PRESS) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (!checkIfStartRecording()) {
+                    if(!checkIfStartRecording()){
                         return false;
                     }
                     mRecordBtn.setSelected(true);
@@ -1025,11 +1033,11 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                     stopRecording();
                 }
-            } else if (recordMode == AliyunSnapVideoParam.RECORD_MODE_AUTO) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    downTime = System.currentTimeMillis();
-                    if (!isRecording) {
-                        if (!checkIfStartRecording()) {
+            } else if (mRecordMode == AliyunSnapVideoParam.RECORD_MODE_AUTO) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    mDownTime = System.currentTimeMillis();
+                    if(!isRecording){
+                        if(!checkIfStartRecording()){
                             return false;
                         }
                         mRecordBtn.setPressed(true);
@@ -1037,28 +1045,28 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                         mRecordBtn.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (mRecordBtn.isPressed()) {
+                                if(mRecordBtn.isPressed()){
                                     mRecordBtn.setSelected(true);
                                     mRecordBtn.setHovered(false);
                                 }
                             }
-                        }, 200);
+                        },200);
                         isRecording = true;
-                    } else {
+                    }else {
                         stopRecording();
                         isRecording = false;
                     }
-                } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                    long timeOffset = System.currentTimeMillis() - downTime;
+                }else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
+                    long timeOffset = System.currentTimeMillis() - mDownTime;
                     mRecordBtn.setPressed(false);
-                    if (timeOffset > 1000) {
+                    if(timeOffset > 1000){
                         stopRecording();
                         isRecording = false;
-                    } else {
-                        if (!isRecordError) {
+                    }else{
+                        if(!isRecordError){
                             mRecordBtn.setSelected(false);
                             mRecordBtn.setHovered(true);
-                        } else {
+                        }else{
                             isRecording = false;
                         }
                     }
@@ -1098,10 +1106,10 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
     }
 
 
-    private void showComplete() {
-        if (mClipManager.getDuration() > mClipManager.getMinDuration()) {
+    private void showComplete(){
+        if(mClipManager.getDuration() > mClipManager.getMinDuration()){
             mCompleteBtn.setActivated(true);
-        } else {
+        }else{
             mCompleteBtn.setActivated(false);
         }
     }
@@ -1116,10 +1124,10 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 if (validClip) {
                     mRecordTimelineView.setDuration((int) clipDuration);
                     mRecordTimelineView.clipComplete();
-                } else {
+                }else {
                     mRecordTimelineView.setDuration(0);
                 }
-                Log.e("validClip", "validClip : " + validClip);
+                Log.e("validClip","validClip : "+validClip);
                 mRecordTimeTxt.setVisibility(View.GONE);
                 mSwitchBeautyBtn.setEnabled(true);
                 mSwitchCameraBtn.setEnabled(true);
@@ -1127,6 +1135,7 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
                 mCompleteBtn.setEnabled(true);
                 mDeleteBtn.setEnabled(true);
                 showComplete();
+                isRecording = false;
             }
         });
 
@@ -1134,23 +1143,23 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        float factorOffset = detector.getScaleFactor() - lastScaleFactor;
-        scaleFactor += factorOffset;
-        lastScaleFactor = detector.getScaleFactor();
-        if (scaleFactor < 0) {
-            scaleFactor = 0;
+        float factorOffset = detector.getScaleFactor() - mLastScaleFactor;
+        mScaleFactor += factorOffset;
+        mLastScaleFactor = detector.getScaleFactor();
+        if (mScaleFactor < 0) {
+            mScaleFactor = 0;
         }
-        if (scaleFactor > 1) {
-            scaleFactor = 1;
+        if (mScaleFactor > 1) {
+            mScaleFactor = 1;
         }
-        mRecorder.setZoom(scaleFactor);
+        mRecorder.setZoom(mScaleFactor);
         return false;
 
     }
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        lastScaleFactor = detector.getScaleFactor();
+        mLastScaleFactor = detector.getScaleFactor();
         return true;
     }
 
@@ -1170,7 +1179,6 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
     }
 
     int mTestFocusIndex;
-
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
         float x = e.getX();
@@ -1191,17 +1199,17 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (Math.abs(distanceX) > 20) {
+        if(Math.abs(distanceX) > 20){
             return false;
         }
-        exposureCompensationRatio += (distanceY / mGlSurfaceView.getHeight());
-        if (exposureCompensationRatio > 1) {
-            exposureCompensationRatio = 1;
+        mExposureCompensationRatio += (distanceY / mGlSurfaceView.getHeight());
+        if (mExposureCompensationRatio > 1) {
+            mExposureCompensationRatio = 1;
         }
-        if (exposureCompensationRatio < 0) {
-            exposureCompensationRatio = 0;
+        if (mExposureCompensationRatio < 0) {
+            mExposureCompensationRatio = 0;
         }
-        mRecorder.setExposureCompensationRatio(exposureCompensationRatio);
+        mRecorder.setExposureCompensationRatio(mExposureCompensationRatio);
         return false;
     }
 
@@ -1212,26 +1220,26 @@ public class AliyunVideoRecorder extends Activity implements View.OnClickListene
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if (filterList == null || filterList.length == 0) {
+        if(mFilterList == null || mFilterList.length == 0){
             return true;
         }
-        if (mRecordBtn.isActivated()) {
+        if(mRecordBtn.isActivated()){
             return true;
         }
         if (velocityX > MAX_SWITCH_VELOCITY) {
-            filterIndex++;
-            if (filterIndex >= filterList.length) {
-                filterIndex = 0;
+            mFilterIndex++;
+            if (mFilterIndex >= mFilterList.length) {
+                mFilterIndex = 0;
             }
         } else if (velocityX < -MAX_SWITCH_VELOCITY) {
-            filterIndex--;
-            if (filterIndex < 0) {
-                filterIndex = filterList.length - 1;
+            mFilterIndex--;
+            if (mFilterIndex < 0) {
+                mFilterIndex = mFilterList.length - 1;
             }
         } else {
             return true;
         }
-        EffectFilter effectFilter = new EffectFilter(filterList[filterIndex]);
+        EffectFilter effectFilter = new EffectFilter(mFilterList[mFilterIndex]);
         mRecorder.applyFilter(effectFilter);
         showFilter(effectFilter.getName());
         return false;

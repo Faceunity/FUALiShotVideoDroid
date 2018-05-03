@@ -44,7 +44,7 @@ public class CoverEditActivity extends Activity implements View.OnClickListener{
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cover_edit);
+        setContentView(R.layout.aliyun_svideo_activity_cover_edit);
         initView();
         mVideoPath = getIntent().getStringExtra(KEY_PARAM_VIDEO);
         mThumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher();
@@ -78,8 +78,8 @@ public class CoverEditActivity extends Activity implements View.OnClickListener{
         mTitle.setVisibility(View.VISIBLE);
 
         mTitle.setText(R.string.edit_cover);
-        mIvLeft.setImageResource(R.drawable.icon_cancel);
-        mIvRight.setImageResource(R.mipmap.icon_confirm);
+        mIvLeft.setImageResource(R.drawable.aliyun_svideo_icon_cancel);
+        mIvRight.setImageResource(R.mipmap.aliyun_svideo_icon_confirm);
         mIvLeft.setOnClickListener(this);
         mIvRight.setOnClickListener(this);
 

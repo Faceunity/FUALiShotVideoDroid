@@ -56,7 +56,7 @@ public class MusicActivity extends Activity implements View.OnClickListener{
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_music);
+        setContentView(R.layout.aliyun_svideo_activity_music);
         getData();
         initView();
         mMusicQuery.setOnResProgressListener(new MusicQuery.OnResProgressListener() {

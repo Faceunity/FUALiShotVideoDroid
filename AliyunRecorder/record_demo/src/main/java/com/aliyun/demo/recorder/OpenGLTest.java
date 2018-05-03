@@ -40,9 +40,9 @@ public class OpenGLTest {
 //        "  gl_FragColor = texture2D( inputImageTexture, textureCoordinate );\n" +
 //        "}";
     String kGPUImageTextureFragmentString =
-            "#extension GL_OES_EGL_image_external : require\n" +
+//            "#extension GL_OES_EGL_image_external : require\n" +
                     "varying highp vec2 texture;\n" +
-                    "uniform samplerExternalOES inputImageTexture;\n" +
+                    "uniform sampler2D inputImageTexture;\n" +
                     "void main() {\n" +
                     "highp vec4 textureColor = texture2D(inputImageTexture, texture);\n" +
                     "highp float v = textureColor.r * 0.5 + textureColor.g * 0.3 + textureColor.b * 0.4;\n" +
@@ -136,7 +136,7 @@ public class OpenGLTest {
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, txtId); //0x8D65
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, txtId); //0x8D65
 
 
         GLES20.glUniform1i(_textureSlot, 0);

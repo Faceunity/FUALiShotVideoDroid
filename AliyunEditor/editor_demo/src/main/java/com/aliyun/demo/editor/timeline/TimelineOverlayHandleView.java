@@ -21,7 +21,9 @@ public class TimelineOverlayHandleView implements View.OnTouchListener{
 
     public TimelineOverlayHandleView(View view, long duration) {
         this.mView = view;
-        this.mView.setOnTouchListener(this);
+        if(mView != null) {
+            this.mView.setOnTouchListener(this);
+        }
         this.mDuration = duration;
     }
 
@@ -57,11 +59,15 @@ public class TimelineOverlayHandleView implements View.OnTouchListener{
     }
 
     public void active() {
-        mView.setVisibility(View.VISIBLE);
+        if(mView != null) {
+            mView.setVisibility(View.VISIBLE);
+        }
     }
 
     public void fix() {
-        mView.setVisibility(View.INVISIBLE);
+        if(mView != null) {
+            mView.setVisibility(View.INVISIBLE);
+        }
     }
 
 

@@ -76,7 +76,7 @@ public class CaptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.resources_item_view, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.aliyun_svideo_resources_item_view, parent, false);
         CaptionViewHolder filterViewHolder = new CaptionViewHolder(view);
         filterViewHolder.frameLayout = (FrameLayout) view.findViewById(R.id.resource_image);
         return filterViewHolder;

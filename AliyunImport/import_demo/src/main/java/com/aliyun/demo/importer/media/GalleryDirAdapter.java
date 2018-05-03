@@ -49,7 +49,7 @@ public class GalleryDirAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         RecyclerView.ViewHolder holder = new GalleryDirViewHolder(
                 LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.import_item_qupai_gallery_dir, null, false), thumbnailGenerator);
+                        R.layout.aliyun_svideo_import_item_qupai_gallery_dir, null, false), thumbnailGenerator);
 
         holder.itemView.setOnClickListener(this);
         return holder;

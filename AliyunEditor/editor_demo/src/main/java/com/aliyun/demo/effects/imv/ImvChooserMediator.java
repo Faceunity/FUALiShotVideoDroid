@@ -70,7 +70,7 @@ public class ImvChooserMediator extends BaseChooser implements OnItemClickListen
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.filter_view, container);
+        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.aliyun_svideo_filter_view, container);
         mListView = (RecyclerView) mView.findViewById(R.id.effect_list_filter);
         mDismiss = (ImageView) mView.findViewById(R.id.dismiss);
         mDismiss.setOnClickListener(onClickListener);

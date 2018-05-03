@@ -58,7 +58,7 @@ public class IMVPreviewDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.imv_preview_dialog_layout, container);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.aliyun_svideo_imv_preview_dialog_layout, container);
         mContext = view.getContext();
         mVideoView = (SquareFrameLayout) view.findViewById(R.id.imv_video_view);
         mCloseBtn = (ImageView) view.findViewById(R.id.iv_imv_close_btn);

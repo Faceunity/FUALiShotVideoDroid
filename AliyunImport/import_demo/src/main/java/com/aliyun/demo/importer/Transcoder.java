@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.aliyun.common.media.AliyunMediaExtractor;
-import com.aliyun.common.project.MediaType;
 import com.aliyun.crop.AliyunCropCreator;
 import com.aliyun.crop.struct.CropParam;
 import com.aliyun.crop.supply.CropCallback;
@@ -26,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.aliyun.demo.importer.media.MediaInfo;
+import com.aliyun.svideo.sdk.external.struct.MediaType;
 import com.duanqu.qupai.adaptive.NativeAdaptiveUtil;
 
 /**
@@ -44,7 +44,7 @@ public class Transcoder {
     private int mTranscodeTotal = 0;
     private boolean isTranscode;
     private AsyncTask<Void, Long, List<MediaInfo>> mTranscodeTask;
-    private int width = 720, height = 720;
+    private int width = 1920, height = 1920;
     private AliyunMediaExtractor mExtractor = new AliyunMediaExtractor();
 
     public void addMedia(MediaInfo mediaInfo) {
@@ -105,19 +105,17 @@ public class Transcoder {
             @Override
             protected List<MediaInfo> doInBackground(Void... params) {
                 CropParam cropParam = null;
-                if(!NativeAdaptiveUtil.isDeviceDecoderEnable()){
-                    for (MediaInfo info : mOriginalVideos) {
-
-                        if (info.mimeType.startsWith("video")) {
+                for (MediaInfo info : mOriginalVideos) {
+                    if (info.mimeType.startsWith("video")) {
+                        if(!NativeAdaptiveUtil.isDeviceDecoderEnable()){
                             cropParam = loadVideoCropInfo(info, scaleMode, videoQuality);
-
-                        } else if (info.mimeType.startsWith("image")) {
-                            cropParam = loadImageCropInfo(info, scaleMode, videoQuality);
                         }
-                        if (cropParam != null) {
-                            mTranscodeVideos.add(cropParam);
-                            mTranscodeTotal++;
-                        }
+                    } else if (info.mimeType.startsWith("image")) {
+                        cropParam = loadImageCropInfo(info, scaleMode, videoQuality);
+                    }
+                    if (cropParam != null) {
+                        mTranscodeVideos.add(cropParam);
+                        mTranscodeTotal++;
                     }
                 }
 

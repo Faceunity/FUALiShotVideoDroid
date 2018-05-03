@@ -48,7 +48,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.category_item_view, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.aliyun_svideo_category_item_view, parent, false);
         CategoryViewHolder filterViewHolder = new CategoryViewHolder(view);
         filterViewHolder.frameLayout = (FrameLayout) view.findViewById(R.id.category_image);
         return filterViewHolder;
@@ -60,7 +60,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         ResourceForm form = data.get(position);
         int viewType = getItemViewType(position);
         if (form.isMore()) {
-            categoryViewHolder.mImage.setImageResource(R.mipmap.more);
+            categoryViewHolder.mImage.setImageResource(R.mipmap.aliyun_svideo_more);
         } else {
             Glide.with(mContext).load(form.getIcon()).into(new ViewTarget<CircularImageView, GlideDrawable>(categoryViewHolder.mImage) {
                 @Override

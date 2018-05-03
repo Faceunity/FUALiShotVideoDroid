@@ -1,6 +1,8 @@
-ext {
+import java.text.SimpleDateFormat
 
-    projectVersion = '3.3.2-2017.08.31'
+ext {
+    projectVersion='3.5.0-pro-2018.02.09'
+
 
     externalAndroidBuildGradlePlugin = 'com.android.tools.build:gradle:2.2.2'
 
@@ -35,8 +37,8 @@ ext {
     externalOKHTTP = 'com.squareup.okhttp3:okhttp:3.2.0'
     externalGSON = 'com.google.code.gson:gson:2.8.0'
     externalOKIO = 'com.squareup.okio:okio:1.12.0'
-
-
+    externalEventBus = 'org.greenrobot:eventbus:3.1.1'
+    externalAliyunOSS = 'com.aliyun.dpa:oss-android-sdk:2.4.4'
 
     externalPagerSlidingTabStrip = 'com.astuetz:pagerslidingtabstrip:1.0.1'
 

@@ -25,7 +25,6 @@ public class PasterUITextImpl extends PasterUIGifImpl{
             mText = (AutoResizingTextView) mPasterView.getContentView();
         }
 
-        mText.setVideoSize(controller.getVideoWidth(), controller.getVideoHeight());
         mText.setText(controller.getText());
         mText.setTextOnly(true);
         mText.setFontPath(controller.getPasterTextFont());
@@ -98,15 +97,4 @@ public class PasterUITextImpl extends PasterUIGifImpl{
     public Bitmap transToImage() {
         return mText.layoutToBitmap();
     }
-
-
-//    @Override
-//    public int getPasterWidth() {
-//        return AliYunMathUtils.convertFun(super.getPasterWidth());
-//    }
-//
-//    @Override
-//    public int getPasterHeight() {
-//        return AliYunMathUtils.convertFun(super.getPasterHeight());
-//    }
 }

@@ -18,7 +18,6 @@ import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.aliyun.common.global.AliyunConfig;
 import com.aliyun.struct.common.CropKey;
 import com.aliyun.struct.common.ScaleMode;
 import com.aliyun.struct.common.VideoQuality;
@@ -53,7 +52,7 @@ public class ImportEditSettingTest extends Activity implements View.OnClickListe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.import_activity_crop_demo);
+        setContentView(R.layout.aliyun_svideo_import_activity_crop_demo);
         initView();
     }
 

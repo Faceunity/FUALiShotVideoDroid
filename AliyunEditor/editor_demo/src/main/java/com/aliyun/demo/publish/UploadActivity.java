@@ -8,25 +8,19 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.TextViewCompat;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import com.alibaba.sdk.android.vod.upload.model.SvideoInfo;
-import com.aliyun.common.global.AliyunConfig;
 import com.aliyun.common.global.AliyunTag;
 import com.aliyun.common.utils.ToastUtil;
 import com.aliyun.demo.editor.R;
 import com.aliyun.qupai.editor.AliyunICompose;
-import com.aliyun.qupai.editor.impl.AliyunComposeFactory;
 import com.aliyun.qupaiokhttp.HttpRequest;
 import com.aliyun.qupaiokhttp.RequestParams;
 import com.aliyun.qupaiokhttp.StringHttpRequestCallback;
@@ -64,7 +58,7 @@ public class UploadActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_upload);
+        setContentView(R.layout.aliyun_svideo_activity_upload);
 
         initView();
         mVideoPath = getIntent().getStringExtra(KEY_UPLOAD_VIDEO);
@@ -85,7 +79,7 @@ public class UploadActivity extends Activity {
         mTextureView = (TextureView) findViewById(R.id.texture);
         mIvLeft = (ImageView) findViewById(R.id.iv_left);
         mIvLeft.setVisibility(View.VISIBLE);
-        mIvLeft.setImageResource(R.drawable.icon_cancel);
+        mIvLeft.setImageResource(R.drawable.aliyun_svideo_icon_cancel);
         mProgress = (ProgressBar) findViewById(R.id.upload_progress);
         mIvLeft.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -231,7 +225,7 @@ public class UploadActivity extends Activity {
                 @Override
                 public void run() {
                     mProgress.setVisibility(View.GONE);
-                    mProgressText.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.icon_composite_success, 0, 0, 0);
+                    mProgressText.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.aliyun_svideo_icon_composite_success, 0, 0, 0);
                     mProgressText.setText(R.string.upload_success);
                     mProgressText.postDelayed(new Runnable() {
                         @Override

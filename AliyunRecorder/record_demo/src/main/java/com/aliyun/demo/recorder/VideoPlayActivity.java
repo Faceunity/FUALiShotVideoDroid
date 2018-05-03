@@ -46,7 +46,7 @@ public class VideoPlayActivity extends Activity implements SurfaceHolder.Callbac
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_video_play);
+        setContentView(R.layout.aliyun_svideo_activity_video_play);
         getData();
         initView();
         msc = new MediaScannerConnection(this,null);

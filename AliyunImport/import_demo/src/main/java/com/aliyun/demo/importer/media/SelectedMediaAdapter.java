@@ -32,7 +32,7 @@ public class SelectedMediaAdapter extends RecyclerView.Adapter<SelectedMediaView
 
     @Override
     public SelectedMediaViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.import_layout_selected_video_item
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.aliyun_svideo_import_layout_selected_video_item
             ,parent , false);
         ImageView ivPhoto = (ImageView) itemView.findViewById(R.id.iv_photo);
         ImageView ivDelete = (ImageView) itemView.findViewById(R.id.iv_delete);
@@ -52,6 +52,9 @@ public class SelectedMediaAdapter extends RecyclerView.Adapter<SelectedMediaView
 
             @Override
             public void onItemDelete(SelectedMediaViewHolder holder, int position) {
+                if(position >= mDataList.size() || position < 0){
+                    return ;
+                }
                 if(mItemViewCallback != null) {
                     mItemViewCallback.onItemDeleteClick(mDataList.get(position));
                 }

@@ -6,7 +6,12 @@ package com.aliyun.demo.widget;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.text.Layout;
 import android.text.StaticLayout;
@@ -20,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.aliyun.common.global.AliyunTag;
-import com.aliyun.common.utils.AliYunMathUtils;
 import com.aliyun.demo.util.ChineseUtil;
 import com.aliyun.demo.util.CompatUtil;
 
@@ -39,8 +43,8 @@ public class AutoResizingTextView extends TextView {
     private boolean frozen = false;
     boolean scaleByDrawable;
 
-    private int videoWidth;
-    private int videoHeight;
+//    private int videoWidth;
+//    private int videoHeight;
 
     private RectF mTextRect = new RectF();
 
@@ -92,7 +96,7 @@ public class AutoResizingTextView extends TextView {
             layout = new StaticLayout(text, mPaint,
                     mWidthLimit, Layout.Alignment.ALIGN_NORMAL, mSpacingMult,
                     mSpacingAdd, true);
-            // return early if we have more lines
+            // return early if we have aliyun_svideo_more lines
             if (mMaxLines != NO_LINE_LIMIT
                     && layout.getLineCount() > mMaxLines) {
                 return 1;
@@ -123,8 +127,8 @@ public class AutoResizingTextView extends TextView {
     private ImageView mImageView;
 
     public void setVideoSize(int width, int height) {
-        videoWidth = width;
-        videoHeight = height;
+//        videoWidth = width;
+//        videoHeight = height;
     }
 
     public void setImageView(ImageView imageView) {
@@ -134,10 +138,10 @@ public class AutoResizingTextView extends TextView {
     public Bitmap layoutToBitmap() {
         int textWidth = mWidth;
         int textHeight = mHeight;
-        int measuredWidth = getMeasuredWidth();
-        int measuredHeight = getMeasuredHeight();
-        float ratioWidth = measuredWidth * 1.0f / videoWidth;
-        float rationHeight = measuredHeight * 1.0f / videoHeight;
+//        int measuredWidth = getMeasuredWidth();
+//        int measuredHeight = getMeasuredHeight();
+//        float ratioWidth = measuredWidth * 1.0f / videoWidth;
+//        float rationHeight = measuredHeight * 1.0f / videoHeight;
         //setTextWidth((int) (mWidth * Math.min(ratioWidth, rationHeight)));
         //setTextHeight((int) (mHeight * Math.min(ratioWidth, rationHeight)));
         Layout layout = getLayout();

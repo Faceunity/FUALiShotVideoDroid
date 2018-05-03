@@ -88,7 +88,7 @@ public class MorePasterAdapter extends RecyclerView.Adapter<MorePasterAdapter.Pa
                     if(mData.getData().getPreviewUrl() != null && !"".equals(mData.getData().getPreviewUrl())) {
                         PasterPreviewDialog dialog = PasterPreviewDialog.newInstance(mData.getData().getPreviewUrl(),
                                 mData.getData().getName(), mData.getData().getId());
-                        dialog.show(((MorePasterActivity) mContext).getSupportFragmentManager(), "overlay");
+                        dialog.show(((MorePasterActivity) mContext).getSupportFragmentManager(), "aliyun_svideo_overlay");
                     }
                 }
             });
@@ -113,7 +113,7 @@ public class MorePasterAdapter extends RecyclerView.Adapter<MorePasterAdapter.Pa
 
     @Override
     public PasterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_effect_manager_list_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aliyun_svideo_layout_effect_manager_list_item, parent, false);
         PasterViewHolder holder = new PasterViewHolder(view);
         return holder;
     }
@@ -126,12 +126,12 @@ public class MorePasterAdapter extends RecyclerView.Adapter<MorePasterAdapter.Pa
         switch (viewType) {
             case VIEW_TYPE_LOCAL:
                 holder.mTvRightButton.setText(R.string.use_effect_edit);
-                holder.mTvRightButton.setBackgroundResource(R.drawable.shape_more_paster_use_bg);
+                holder.mTvRightButton.setBackgroundResource(R.drawable.aliyun_svideo_shape_more_paster_use_bg);
                 holder.updateData(position, mDataList.get(position));
                 break;
             case VIEW_TYPE_REMOTE:
                 holder.mTvRightButton.setText(R.string.download_effect_edit);
-                holder.mTvRightButton.setBackgroundResource(R.drawable.shape_more_paster_download_bg);
+                holder.mTvRightButton.setBackgroundResource(R.drawable.aliyun_svideo_shape_more_paster_download_bg);
                 holder.updateData(position, mDataList.get(position));
                 break;
             case VIEW_TYPE_DOWNLOADING:

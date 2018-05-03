@@ -55,7 +55,6 @@
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunImport/import_demo/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunImport/import_demo/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunImport/import_demo/intermediates/shaders" />
-      <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunImport/import_demo/intermediates/symbols" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunImport/import_demo/intermediates/transforms" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunImport/import_demo/intermediates/typedefs.txt" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunImport/import_demo/outputs" />
@@ -100,25 +99,25 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 25 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" scope="TEST" name="org.hamcrest:hamcrest-core:1.3@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.squareup.okhttp3:okhttp:3.2.0@jar" level="project" />
-    <orderEntry type="library" exported="" name="AliyunVideoSdk::null" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="junit:junit:4.12@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:recyclerview-v7-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-annotations:24.2.1@jar" level="project" />
-    <orderEntry type="library" exported="" name="pub.devrel:easypermissions-0.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-media-compat-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.squareup.okio:okio:1.6.0@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-fragment-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-v4-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-vector-drawable-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-core-utils-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:animated-vector-drawable-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:design-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-core-ui-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:appcompat-v7-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.github.bumptech.glide:glide:3.7.0@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-compat-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:animated-vector-drawable-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-compat-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:recyclerview-v7-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:design-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: pub.devrel:easypermissions-0.2.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: junit:junit:4.12@jar" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: AliyunVideoSdk::null" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-annotations:24.2.1@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-vector-drawable-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-core-utils-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.squareup.okhttp3:okhttp:3.2.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.squareup.okio:okio:1.6.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-core-ui-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.github.bumptech.glide:glide:3.7.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-v4-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-fragment-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:appcompat-v7-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-media-compat-24.2.1" level="project" />
     <orderEntry type="module" module-name="AliyunView" exported="" />
     <orderEntry type="module" module-name="downloadermanager" exported="" />
     <orderEntry type="module" module-name="crop_demo" exported="" />

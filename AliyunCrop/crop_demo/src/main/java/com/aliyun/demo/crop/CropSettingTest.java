@@ -67,7 +67,7 @@ public class CropSettingTest extends Activity implements View.OnClickListener,Co
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_crop_demo);
+        setContentView(R.layout.aliyun_svideo_activity_crop_demo);
         initView();
         initAssetPath();
         copyAssets();
@@ -91,24 +91,35 @@ public class CropSettingTest extends Activity implements View.OnClickListener,Co
 
     private void initAssetPath(){
         String path = StorageUtils.getCacheDirectory(this).getAbsolutePath() + File.separator+ Common.QU_NAME + File.separator;
-        eff_dirs = new String[]{
-                null,
-                path + "filter/chihuang",
-                path + "filter/fentao",
-                path + "filter/hailan",
-                path + "filter/hongrun",
-                path + "filter/huibai",
-                path + "filter/jingdian",
-                path + "filter/maicha",
-                path + "filter/nonglie",
-                path + "filter/rourou",
-                path + "filter/shanyao",
-                path + "filter/xianguo",
-                path + "filter/xueli",
-                path + "filter/yangguang",
-                path + "filter/youya",
-                path + "filter/zhaoyang"
-        };
+        File filter = new File(new File(path), "filter");
+
+        String[] list = filter.list();
+        if(list == null || list.length == 0){
+            return ;
+        }
+        eff_dirs = new String[list.length + 1];
+        eff_dirs[0] = null;
+        for(int i = 0; i < list.length; i++){
+            eff_dirs[i + 1] = filter.getPath() + "/" + list[i];
+        }
+//        eff_dirs = new String[]{
+//                null,
+//                path + "filter/chihuang",
+//                path + "filter/fentao",
+//                path + "filter/hailan",
+//                path + "filter/hongrun",
+//                path + "filter/huibai",
+//                path + "filter/jingdian",
+//                path + "filter/maicha",
+//                path + "filter/nonglie",
+//                path + "filter/rourou",
+//                path + "filter/shanyao",
+//                path + "filter/xianguo",
+//                path + "filter/xueli",
+//                path + "filter/yangguang",
+//                path + "filter/youya",
+//                path + "filter/zhaoyang"
+//        };
     }
 
 

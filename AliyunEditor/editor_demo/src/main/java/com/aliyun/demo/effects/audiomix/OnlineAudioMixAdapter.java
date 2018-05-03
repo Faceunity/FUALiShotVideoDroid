@@ -56,7 +56,7 @@ public class OnlineAudioMixAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.music_item_view, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.aliyun_svideo_music_item_view, parent, false);
         AudioMixViewHolder audioMixViewHolder = new AudioMixViewHolder(view);
         audioMixViewHolder.musicName = (TextView) view.findViewById(R.id.music_name);
         audioMixViewHolder.musicType = (TextView) view.findViewById(R.id.music_type);

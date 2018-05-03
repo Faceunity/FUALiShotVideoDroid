@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="com.github.bumptech.glide:okhttp3-integration-1.4.0">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/.gradle-build/AliyunEditor/editor_demo/intermediates/exploded-aar/com.github.bumptech.glide/okhttp3-integration/1.4.0/res" />
+      <root url="jar://$PROJECT_DIR$/.gradle-build/AliyunEditor/editor_demo/intermediates/exploded-aar/com.github.bumptech.glide/okhttp3-integration/1.4.0/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

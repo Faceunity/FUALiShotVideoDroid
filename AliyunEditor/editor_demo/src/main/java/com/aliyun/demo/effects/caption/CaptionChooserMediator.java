@@ -66,7 +66,7 @@ public class CaptionChooserMediator extends BaseChooser implements OnItemClickLi
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.caption_view, container);
+        View mView = LayoutInflater.from(getActivity()).inflate(R.layout.aliyun_svideo_caption_view, container);
         mDismiss = (ImageView) mView.findViewById(R.id.dismiss);
         mDismiss.setOnClickListener(onClickListener);
         mDismissRelative = (RelativeLayout) mView.findViewById(R.id.caption_dismiss);

@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="AliyunVideoSdk::null">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle-build/AliyunFileDownLoader/downloadermanager/intermediates/exploded-aar/com.aliyun/AliyunVideoSdk/3.5.0-pro-2018.02.09/jars/libs/aliyun-vod-auth-android-sdk-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/.gradle-build/AliyunFileDownLoader/downloadermanager/intermediates/exploded-aar/com.aliyun/AliyunVideoSdk/3.5.0-pro-2018.02.09/jars/libs/aliyun-vod-croe-android-sdk-1.2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/.gradle-build/AliyunFileDownLoader/downloadermanager/intermediates/exploded-aar/com.aliyun/AliyunVideoSdk/3.5.0-pro-2018.02.09/jars/classes.jar!/" />
+      <root url="jar://$PROJECT_DIR$/.gradle-build/AliyunFileDownLoader/downloadermanager/intermediates/exploded-aar/com.aliyun/AliyunVideoSdk/3.5.0-pro-2018.02.09/jars/libs/aliyun-vod-upload-android-sdk-1.1.0.jar!/" />
+      <root url="file://$PROJECT_DIR$/.gradle-build/AliyunFileDownLoader/downloadermanager/intermediates/exploded-aar/com.aliyun/AliyunVideoSdk/3.5.0-pro-2018.02.09/res" />
+      <root url="jar://$PROJECT_DIR$/.gradle-build/AliyunFileDownLoader/downloadermanager/intermediates/exploded-aar/com.aliyun/AliyunVideoSdk/3.5.0-pro-2018.02.09/jars/libs/AliyunVideoSdk-3.5.0-pro-2018.02.09.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

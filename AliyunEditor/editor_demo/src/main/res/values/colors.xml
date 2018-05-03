@@ -69,4 +69,9 @@
 
     <color name="music_back_color">#1B2033</color>
 
+    <color name="aliyun_animation_filter_color1">#FBDE38</color>
+    <color name="aliyun_animation_filter_color2">#62B6FE</color>
+    <color name="aliyun_animation_filter_color3">#FEA933</color>
+    <color name="aliyun_animation_filter_color4">#F35C4B</color>
+    <color name="aliyun_animation_filter_color5">#798ECD</color>
 </resources>

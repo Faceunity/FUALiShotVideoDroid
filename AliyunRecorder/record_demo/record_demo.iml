@@ -54,7 +54,6 @@
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunRecorder/record_demo/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunRecorder/record_demo/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunRecorder/record_demo/intermediates/shaders" />
-      <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunRecorder/record_demo/intermediates/symbols" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunRecorder/record_demo/intermediates/transforms" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunRecorder/record_demo/intermediates/typedefs.txt" />
       <excludeFolder url="file://$MODULE_DIR$/../../.gradle-build/AliyunRecorder/record_demo/outputs" />
@@ -82,13 +81,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/assets" type="java-test-resource" />
@@ -96,33 +88,39 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 25 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="com.google.code.gson:gson:2.8.0@jar" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="org.hamcrest:hamcrest-core:1.3@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-core-utils-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.squareup.okhttp3:okhttp:3.2.0@jar" level="project" />
-    <orderEntry type="library" exported="" name="AliyunVideoSdk::null" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:animated-vector-drawable-25.0.1" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="junit:junit:4.12@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:appcompat-v7-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="pub.devrel:easypermissions-0.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-core-ui-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.github.bumptech.glide:okhttp3-integration-1.4.0" level="project" />
-    <orderEntry type="library" exported="" name="com.squareup.okio:okio:1.6.0@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-compat-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-annotations:25.0.1@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-media-compat-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:recyclerview-v7-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-vector-drawable-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-v4-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:design-24.2.1" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-fragment-25.0.1" level="project" />
-    <orderEntry type="library" exported="" name="com.github.bumptech.glide:glide:3.7.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:animated-vector-drawable-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-compat-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:recyclerview-v7-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:design-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: pub.devrel:easypermissions-0.2.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: junit:junit:4.12@jar" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: AliyunVideoSdk::null" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-annotations:24.2.1@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-vector-drawable-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-core-utils-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.squareup.okhttp3:okhttp:3.2.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.squareup.okio:okio:1.6.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-core-ui-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.github.bumptech.glide:okhttp3-integration-1.4.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.github.bumptech.glide:glide:3.7.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-v4-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.google.code.gson:gson:2.8.0@jar" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-fragment-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:appcompat-v7-24.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.android.support:support-media-compat-24.2.1" level="project" />
     <orderEntry type="module" module-name="AliyunView" exported="" />
+    <orderEntry type="module" module-name="beautycontrolview" exported="" />
     <orderEntry type="module" module-name="downloadermanager" exported="" />
-    <orderEntry type="module" module-name="STMobileJNI" exported="" />
-    <orderEntry type="module" module-name="faceunity" exported="" />
   </component>
 </module>

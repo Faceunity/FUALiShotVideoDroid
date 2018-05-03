@@ -15,9 +15,6 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
-
-
 
 
 public class VideoSliceSeekBar extends View {
@@ -50,8 +47,8 @@ public class VideoSliceSeekBar extends View {
     private SELECT_THUMB lastSelectedThumb = SELECT_THUMB.SELECT_THUMB_NONE;
     private int thumbSliceHalfWidth;
     private SeekBarChangeListener scl;
-    private int resSweepLeft = R.mipmap.icon_sweep_left,resSweepRight = R.mipmap.icon_sweep_right;
-    private int resFrame = R.mipmap.icon_frame;
+    private int resSweepLeft = R.mipmap.aliyun_svideo_icon_sweep_left,resSweepRight = R.mipmap.aliyun_svideo_icon_sweep_right;
+    private int resFrame = R.mipmap.aliyun_svideo_icon_frame;
     private int resBackground = R.color.aliyun_color_bg;
     private int resPaddingColor  =  android.R.color.holo_red_dark;
 
@@ -82,9 +79,9 @@ public class VideoSliceSeekBar extends View {
                 R.attr.qusnap_crop_sweep_left, R.attr.qusnap_crop_sweep_right,
                 R.attr.qusnap_crop_seek_frame, R.attr.qusnap_background_color,
                 R.attr.qusnap_crop_seek_padding_color});
-        resSweepLeft = a.getResourceId(0,  R.mipmap.icon_sweep_left);
-        resSweepRight = a.getResourceId(1, R.mipmap.icon_sweep_right);
-        resFrame = a.getResourceId(2, R.mipmap.icon_frame);
+        resSweepLeft = a.getResourceId(0,  R.mipmap.aliyun_svideo_icon_sweep_left);
+        resSweepRight = a.getResourceId(1, R.mipmap.aliyun_svideo_icon_sweep_right);
+        resFrame = a.getResourceId(2, R.mipmap.aliyun_svideo_icon_frame);
         resBackground =  a.getResourceId(3,0);
         resPaddingColor = a.getResourceId(4,android.R.color.holo_red_dark);
 

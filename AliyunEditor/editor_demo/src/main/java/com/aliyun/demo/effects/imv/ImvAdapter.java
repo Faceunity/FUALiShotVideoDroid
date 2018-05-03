@@ -51,7 +51,7 @@ public class ImvAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> im
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.resources_item_view, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.aliyun_svideo_resources_item_view, parent, false);
         IMVViewHolder iMVViewHolder = new IMVViewHolder(view);
         iMVViewHolder.frameLayout = (FrameLayout) view.findViewById(R.id.resource_image);
         return iMVViewHolder;
@@ -64,7 +64,7 @@ public class ImvAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> im
         int viewType = getItemViewType(position);
         iMVViewHolder.itemView.setOnClickListener(this);
         if(viewType == EFFECT_NONE) {
-            Glide.with(mContext).load(R.mipmap.none).into(new ViewTarget<CircularImageView, GlideDrawable>(iMVViewHolder.mImage) {
+            Glide.with(mContext).load(R.mipmap.aliyun_svideo_none).into(new ViewTarget<CircularImageView, GlideDrawable>(iMVViewHolder.mImage) {
                 @Override
                 public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
                     iMVViewHolder.mImage.setImageBitmap(((GlideBitmapDrawable) glideDrawable).getBitmap());
@@ -72,7 +72,7 @@ public class ImvAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> im
             });
         } else if (viewType == EFFECT_MORE) {
             name = mContext.getString(R.string.more);
-            Glide.with(mContext).load(R.mipmap.more).into(new ViewTarget<CircularImageView, GlideDrawable>(iMVViewHolder.mImage) {
+            Glide.with(mContext).load(R.mipmap.aliyun_svideo_more).into(new ViewTarget<CircularImageView, GlideDrawable>(iMVViewHolder.mImage) {
                 @Override
                 public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
                     iMVViewHolder.mImage.setImageBitmap(((GlideBitmapDrawable) glideDrawable).getBitmap());

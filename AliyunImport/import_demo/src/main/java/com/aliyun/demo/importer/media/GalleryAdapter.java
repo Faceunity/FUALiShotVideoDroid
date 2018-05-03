@@ -65,7 +65,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         holder = new GalleryItemViewHolder(
                     LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.import_item_qupai_gallery_media, parent, false), thumbnailGenerator);
+                            R.layout.aliyun_svideo_import_item_qupai_gallery_media, parent, false), thumbnailGenerator);
 
         holder.itemView.setOnClickListener(this);
         return holder;

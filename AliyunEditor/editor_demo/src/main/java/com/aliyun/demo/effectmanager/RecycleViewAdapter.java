@@ -61,7 +61,7 @@ public class RecycleViewAdapter extends StateController.StateAdapter<RecycleView
 
     @Override
     public PasterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_effect_manager_list_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.aliyun_svideo_layout_effect_manager_list_item, parent, false);
         return new PasterViewHolder(view);
     }
 

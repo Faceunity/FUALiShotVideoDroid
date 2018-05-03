@@ -43,12 +43,12 @@ public class MoreMVActivity extends ActionBarActivity implements
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_more_paster);
+        setContentView(R.layout.aliyun_svideo_activity_more_paster);
         setActionBarLeftText(getString(R.string.cancel_more_mv_edit));
         setActionBarLeftViewVisibility(View.VISIBLE);
         setActionBarTitle(getString(R.string.more_mv_nav_edit));
         setActionBarTitleVisibility(View.VISIBLE);
-        setActionBarRightView(R.mipmap.icon_edit);
+        setActionBarRightView(R.mipmap.aliyun_svideo_icon_edit);
         setActionBarRightViewVisibility(View.VISIBLE);
         setActionBarLeftClickListener(this);
         setActionBarRightClickListener(this);

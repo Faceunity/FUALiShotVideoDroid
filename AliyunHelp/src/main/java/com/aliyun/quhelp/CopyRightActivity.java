@@ -22,7 +22,7 @@ public class CopyRightActivity extends Activity implements View.OnClickListener 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.copyright_layout);
+        setContentView(R.layout.aliyun_svideo_copyright_layout);
         initView();
     }
 

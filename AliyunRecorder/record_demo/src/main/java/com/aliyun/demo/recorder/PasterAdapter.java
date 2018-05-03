@@ -44,7 +44,7 @@ public class PasterAdapter extends RecyclerView.Adapter<PasterAdapter.AssetInfoV
     }
     @Override
     public AssetInfoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View item = LayoutInflater.from(context).inflate(R.layout.item_asset,parent,false);
+        View item = LayoutInflater.from(context).inflate(R.layout.aliyun_svideo_item_asset,parent,false);
         item.setLayoutParams(new FrameLayout.LayoutParams(itemWidth,itemWidth));
         AssetInfoViewHolder holder = new AssetInfoViewHolder(item,listener);
         return holder;

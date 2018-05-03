@@ -172,11 +172,11 @@ public class ProgressDialog extends Dialog {
         if (mProgressStyle == STYLE_HORIZONTAL) {
             view = inflater.inflate(a.getResourceId(
                     R.styleable.QuViewAlertDialog_horizontalProgressLayout,
-                    R.layout.alert_dialog_progress), null);
+                    R.layout.aliyun_video_alert_dialog_progress), null);
         } else {
             view = inflater.inflate(a.getResourceId(
                     R.styleable.QuViewAlertDialog_progressLayout,
-                    R.layout.progress_dialog), null);
+                    R.layout.aliyun_svideo_progress_dialog), null);
         }
 
         mProgressNumber = (TextView) view.findViewById(R.id.aliyun_progress_number);

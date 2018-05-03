@@ -34,8 +34,8 @@ dependencies {
     compile(project(':AliyunVideoSdk')) {
         transitive = false
     }
-    compile project(':STMobileJNI')
     compile project(':AliyunView')
+
     compile externalGlide
     compile externalGlideOkHttp
     compile externalEasyPermissions
@@ -46,5 +46,5 @@ dependencies {
     compile project(path: ':AliyunFileDownLoader:downloadermanager')
     compile 'com.google.code.gson:gson:2.8.0'
     //    compile project(path: ':AliyunEditor:editor_demo')
-    compile project(':faceunity')
+    compile project(':beautycontrolview')
 }

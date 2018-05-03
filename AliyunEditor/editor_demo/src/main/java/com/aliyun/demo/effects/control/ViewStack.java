@@ -59,7 +59,7 @@ public class ViewStack {
                 mOverlayChooserMediator.setBottomAnimation(mBottomAnimation);
                 mOverlayChooserMediator.setOnEffectChangeListener(mOnEffectChangeListener);
                 mOverlayChooserMediator.setDialogButtonClickListener(mDialogButtonClickListener);
-                mOverlayChooserMediator.show(((EditorActivity) mContext).getSupportFragmentManager(), "overlay");
+                mOverlayChooserMediator.show(((EditorActivity) mContext).getSupportFragmentManager(), "aliyun_svideo_overlay");
                 break;
             case CAPTION:
                 mCaptionChooserMediator = CaptionChooserMediator.newInstance();
@@ -67,7 +67,7 @@ public class ViewStack {
                 mCaptionChooserMediator.setBottomAnimation(mBottomAnimation);
                 mCaptionChooserMediator.setOnEffectChangeListener(mOnEffectChangeListener);
                 mCaptionChooserMediator.setDialogButtonClickListener(mDialogButtonClickListener);
-                mCaptionChooserMediator.show(((EditorActivity) mContext).getSupportFragmentManager(), "caption");
+                mCaptionChooserMediator.show(((EditorActivity) mContext).getSupportFragmentManager(), "aliyun_svideo_caption");
                 break;
             case AUDIO_MIX:
                 mAudioMixChooserMediator = AudioMixChooserMediator.newInstance();

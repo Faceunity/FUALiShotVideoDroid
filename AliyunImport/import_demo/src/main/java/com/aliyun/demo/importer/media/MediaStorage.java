@@ -16,8 +16,6 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.aliyun.common.project.Project;
-import com.aliyun.common.project.ProjectInfo;
 import com.aliyun.common.utils.FileUtils;
 import com.aliyun.common.utils.ToastUtil;
 import com.aliyun.jasonparse.JSONSupport;
@@ -36,6 +34,8 @@ import com.aliyun.demo.importer.R;
  * Created by Administrator on 2016/5/18.
  */
 public class MediaStorage {
+    public static final int TYPE_VIDEO = 0;
+    public static final int TYPE_PHOTO = 1;
 
     public static final int NOTIFY_SIZE_OFFSET = 20;
 
@@ -55,7 +55,6 @@ public class MediaStorage {
     private List<MediaInfo> medias = new ArrayList<>();
     private List<MediaDir> dirs = new ArrayList<>();
 
-    private ProjectInfo currentDraft;
     private MediaInfo currentMedia;
     private MediaDir currentDir;
     private boolean isActive = true;
@@ -137,6 +136,9 @@ public class MediaStorage {
         }
         if (cache != null) {
             MediaDir dir = cache.dir;
+            if(dir == null){
+                return ;
+            }
             cacheDirName = dir.dirName;
             mediaByDir.put(dir, cache.list);
             setCurrentDir(dir);
@@ -284,10 +286,6 @@ public class MediaStorage {
 
     public MediaInfo getCurrentMedia() {
         return currentMedia;
-    }
-
-    public ProjectInfo getCurrentDraft() {
-        return currentDraft;
     }
 
     public void setCurrentDisplayMediaData(MediaInfo info) {
@@ -503,7 +501,7 @@ public class MediaStorage {
             return null;
         }
         MediaInfo videoInfo = new MediaInfo();
-        videoInfo.type = Project.TYPE_VIDEO;
+        videoInfo.type = TYPE_VIDEO;
 
         int duration = cursor.getInt(col_duration);
         String mimeType = cursor.getString(col_mine_type);
@@ -541,7 +539,7 @@ public class MediaStorage {
             return null;
         }
         MediaInfo mediaInfo = new MediaInfo();
-        mediaInfo.type = Project.TYPE_PHOTO;
+        mediaInfo.type = TYPE_PHOTO;
         String title = cursor.getString(col_title);
         mediaInfo.filePath = filePath;
         mediaInfo.mimeType = mimeType;

@@ -126,7 +126,7 @@ public class VideoTrimAdapter extends BaseAdapter {
         if (convertView == null) {
             holder = new ViewHolder();
 
-            convertView = LayoutInflater.from(mContext).inflate( R.layout.item_qupai_trim_video_thumbnail, parent, false);
+            convertView = LayoutInflater.from(mContext).inflate( R.layout.aliyun_svideo_item_qupai_trim_video_thumbnail, parent, false);
             holder.thumblayout = (SquareFrameLayout) convertView.findViewById(R.id.aliyun_video_tailor_frame);
             holder.thumbImage = (ImageView) convertView.findViewById(R.id.aliyun_video_tailor_img_item);
             convertView.setTag(holder);

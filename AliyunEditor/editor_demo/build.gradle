@@ -19,6 +19,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    android {
+        lintOptions {
+            abortOnError false
+        }
+    }
 }
 
 dependencies {
@@ -38,4 +43,7 @@ dependencies {
     compile externalGSON
     compile externalGlide
     compile externalGlideOkHttp
+    compile externalAliyunOSS
+    compile externalEventBus
+
 }

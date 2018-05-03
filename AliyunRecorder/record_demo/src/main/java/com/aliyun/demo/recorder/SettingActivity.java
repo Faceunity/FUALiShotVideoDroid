@@ -26,7 +26,7 @@ public class SettingActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_setting);
+        setContentView(R.layout.aliyun_svideo_activity_setting);
         width = (EditText) findViewById(R.id.aliyun_width);
         height = (EditText) findViewById(R.id.aliyun_height);
 

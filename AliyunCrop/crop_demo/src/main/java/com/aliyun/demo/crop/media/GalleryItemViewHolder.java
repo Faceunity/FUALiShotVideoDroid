@@ -43,7 +43,7 @@ public class GalleryItemViewHolder extends RecyclerView.ViewHolder {
     public void setData(final MediaInfo info){
         if(info == null){
             thumbImage.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-            thumbImage.setImageResource(R.mipmap.icon_record);
+            thumbImage.setImageResource(R.mipmap.aliyun_svideo_aliyun_svideo_icon_record);
             return;
         }
         thumbImage.setScaleType(ImageView.ScaleType.CENTER_CROP);

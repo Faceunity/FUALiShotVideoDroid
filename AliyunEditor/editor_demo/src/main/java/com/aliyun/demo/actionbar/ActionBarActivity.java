@@ -40,7 +40,7 @@ public abstract class ActionBarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        mViewContainer = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.activity_action_bar, null);
+        mViewContainer = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.aliyun_svideo_activity_action_bar, null);
     }
 
     @Override
@@ -79,7 +79,7 @@ public abstract class ActionBarActivity extends AppCompatActivity {
         if(mCustomView != null) {
             mActionBar.setCustomView(mCustomView);
         } else {
-            View view = LayoutInflater.from(this).inflate(R.layout.action_bar_profile, null);
+            View view = LayoutInflater.from(this).inflate(R.layout.aliyun_svideo_action_bar_profile, null);
             mActionBar.setCustomView(view);
             LayoutParams layoutParams = view.getLayoutParams();
             layoutParams.width = LayoutParams.MATCH_PARENT;
@@ -91,8 +91,8 @@ public abstract class ActionBarActivity extends AppCompatActivity {
             mTvRight = (TextView) actionBarView.findViewById(R.id.tv_right);
             mTvLeft = (TextView) actionBarView.findViewById(R.id.tv_left);
             mIvLeft.setOnClickListener(mDefaultClicKListener);
-            mIvLeft.setImageResource(R.mipmap.icon_back);
-            mIvRight.setImageResource(R.mipmap.icon_next);
+            mIvLeft.setImageResource(R.mipmap.aliyun_svideo_icon_back);
+            mIvRight.setImageResource(R.mipmap.aliyun_svideo_icon_next);
             mRightView.delegate(mIvRight);
             mLeftView.delegate(mIvLeft);
             mLeftView.setOnClickListener(mDefaultClicKListener);

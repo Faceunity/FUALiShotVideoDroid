@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.provider.MediaStore;
 
-import com.aliyun.common.project.Project;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -22,6 +21,8 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.aliyun.demo.importer.media.MediaStorage.TYPE_PHOTO;
 
 
 public class ThumbnailGenerator {
@@ -81,7 +82,7 @@ public class ThumbnailGenerator {
             options.inDither = false;
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             final Bitmap bitmap ;
-            if (type == Project.TYPE_PHOTO) {
+            if (type == TYPE_PHOTO) {
                 bitmap = MediaStore.Images.Thumbnails.getThumbnail(resolver,
                         id == -1?resId:id, MediaStore.Images.Thumbnails.MICRO_KIND, options);
             } else {

@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
@@ -36,7 +35,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aliyun.aliface.AliFace;
 import com.aliyun.common.global.AppInfo;
 import com.aliyun.common.logger.Logger;
 import com.aliyun.common.utils.CommonUtil;
@@ -46,8 +44,8 @@ import com.aliyun.common.utils.StorageUtils;
 import com.aliyun.common.utils.ToastUtil;
 import com.aliyun.demo.R;
 import com.aliyun.demo.recorder.util.Common;
+import com.aliyun.demo.recorder.util.MVResourceUtil;
 import com.aliyun.demo.recorder.util.OrientationDetector;
-import com.aliyun.demo.recorder.util.STLicenseUtils;
 import com.aliyun.downloader.DownloaderManager;
 import com.aliyun.downloader.FileDownloaderCallback;
 import com.aliyun.downloader.FileDownloaderModel;
@@ -64,23 +62,20 @@ import com.aliyun.recorder.supply.AliyunIClipManager;
 import com.aliyun.recorder.supply.AliyunIRecorder;
 import com.aliyun.recorder.supply.EncoderInfoCallback;
 import com.aliyun.recorder.supply.RecordCallback;
+import com.aliyun.struct.effect.EffectBean;
 import com.aliyun.struct.effect.EffectFilter;
-import com.aliyun.struct.effect.EffectImage;
 import com.aliyun.struct.effect.EffectPaster;
 import com.aliyun.struct.encoder.EncoderInfo;
+import com.aliyun.struct.form.IMVForm;
 import com.aliyun.struct.form.PreviewPasterForm;
 import com.aliyun.struct.form.PreviewResourceForm;
 import com.aliyun.struct.recorder.CameraType;
 import com.aliyun.struct.recorder.FlashType;
 import com.aliyun.struct.recorder.MediaInfo;
-import com.duanqu.qupai.adaptive.NativeAdaptiveUtil;
 import com.google.gson.reflect.TypeToken;
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.qu.preview.callback.OnFrameCallBack;
 import com.qu.preview.callback.OnTextureIdCallBack;
-import com.sensetime.stmobile.FileUtils;
-import com.sensetime.stmobile.STMobileHumanActionNative;
-import com.sensetime.stmobile.STRotateType;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -89,17 +84,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CameraDemo extends Activity implements View.OnClickListener, GestureDetector.OnGestureListener,
         View.OnTouchListener, ScaleGestureDetector.OnScaleGestureListener {
     private static final String TAG = "CameraDemo";
     private static final String LOCAL_SETTING_NAME = "sdk_record_download_paster";
 
+    public static final int TYPE_FILTER = 1;
+    public static final int TYPE_MV = 2;
+    public static final int TYPE_MUSIC = 3;
+
     private GLSurfaceView glSurfaceView;
     private ImageView switchCameraBtn, switchLightBtn, backBtn, musicBtn, compeleteBtn;
     private TextView recordDurationTxt, filterTxt, rateVerySlowTxt, rateSlowTxt,
             rateStandardTxt, rateFastTxt, rateVeryFastTxt, tipTxt;
+    private View magicMusic, recordLayoutBottom;
     private TextView deleteBtn;
     private AliyunIRecorder recorder;
     private FlashType flashType = FlashType.OFF;
@@ -113,9 +115,9 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
     private ScaleGestureDetector scaleGestureDetector;
     private PreviewPasterForm currentPasterForm;
     private RecordTimelineView recordTimelineView;
+//    private File mAudioFile = new File("/sdcard/test_resample");
+//    DataOutputStream dos;
 
-
-    private STMobileHumanActionNative mSTHumanActionNative = new STMobileHumanActionNative();
     private LinearSnapHelper linearSnapHelper;
     private LinearLayoutManager linearLayoutManager;
     private static int TEST_VIDEO_WIDTH = 540;
@@ -168,10 +170,17 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
 
     private OrientationDetector orientationDetector;
     private int rotation;
+    private boolean isMaxDuration;
 
-
+    private int mSelectedMvPos;
+    private List<IMVForm> imvForms;
+    private int mGlSurfaceWidth, mGlSurfaceHeight;
     private List<PreviewPasterForm> resources = new ArrayList<>();
-    String[] eff_dirs;
+    String[] mEffDirs;
+    //    private EffectFilter mCurrEffectFilter;
+    private LinkedHashMap<Object, Integer> mConflictEffects = new LinkedHashMap<>();
+    private EffectBean mCurrMv;
+    private EffectFilter mCurrFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,38 +189,31 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_camera_demo);
+        setContentView(R.layout.aliyun_svideo_activity_camera_demo);
         getData();
         initOritationDetector();
-//        copyAndCheckForST();
         initView();
         initSDK();
         initAssetPath();
         copyAssets();
-//        NativeAdaptiveUtil.setHWEncoderEnable(false);
-
+//        EffectBean effect = new EffectBean();
+//        effect.setPath("/mnt/sdcard/test_mv");
+//        mConflictEffects.put(effect, TYPE_MV);
     }
 
     private void initAssetPath() {
         String path = StorageUtils.getCacheDirectory(this).getAbsolutePath() + File.separator + Common.QU_NAME + File.separator;
-        eff_dirs = new String[]{
-                null,
-                path + "filter/chihuang",
-                path + "filter/fentao",
-                path + "filter/hailan",
-                path + "filter/hongrun",
-                path + "filter/huibai",
-                path + "filter/jingdian",
-                path + "filter/maicha",
-                path + "filter/nonglie",
-                path + "filter/rourou",
-                path + "filter/shanyao",
-                path + "filter/xianguo",
-                path + "filter/xueli",
-                path + "filter/yangguang",
-                path + "filter/youya",
-                path + "filter/zhaoyang"
-        };
+        File filter = new File(new File(path), "filter");
+
+        String[] list = filter.list();
+        if (list == null || list.length == 0) {
+            return;
+        }
+        mEffDirs = new String[list.length + 1];
+        mEffDirs[0] = null;
+        for (int i = 0; i < list.length; i++) {
+            mEffDirs[i + 1] = filter.getPath() + "/" + list[i];
+        }
     }
 
     private void initOritationDetector() {
@@ -227,18 +229,6 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
         });
     }
 
-    private void copyAndCheckForST() {
-        FileUtils.copyModelFiles(CameraDemo.this);
-        if (!STLicenseUtils.checkLicense(CameraDemo.this)) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), "You should be authorized first!", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
-
     private void getData() {
         TEST_VIDEO_WIDTH = getIntent().getIntExtra("width", TEST_VIDEO_WIDTH);
         TEST_VIDEO_HEIGHT = getIntent().getIntExtra("height", TEST_VIDEO_HEIGHT);
@@ -246,14 +236,6 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
         beautyLevel = getIntent().getBooleanExtra("beauty", true) ? beautyLevel : 0;
     }
 
-    private void initHumanAction() {
-        int result = mSTHumanActionNative.createInstance(FileUtils.getTrackModelPath(this),
-                STMobileHumanActionNative.ST_MOBILE_HUMAN_ACTION_DEFAULT_CONFIG_VIDEO);
-    }
-
-    private void initFaceDetector() {
-//        initHumanAction();
-    }
 
     private void initSDK() {
         recorder = AliyunRecorderCreator.getRecorderInstance(this);
@@ -284,30 +266,8 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                 } else {
                     orient = (info.orientation + (rotation - 90) + 360) % 360;
                 }
-                int orientation = getOrientation(orient);
 
                 float[][] point = new float[0][6];
-//                STHumanAction humanAction = mSTHumanActionNative.humanActionDetect(bytes, STCommon.ST_PIX_FMT_NV21,
-//                        STMobileHumanActionNative.ST_MOBILE_HUMAN_ACTION_DEFAULT_CONFIG_DETECT, orientation,
-//                        width, height);
-//                if (humanAction == null) {
-//                    return;
-//                }
-//                point = new float[humanAction.faceCount][6];
-//                for (int i = 0; i < humanAction.faceCount; i++) {
-//                    STPoint[] stPoints = humanAction.getMobileFaces()[i].getPoints_array();
-//                    point[i][LEFT_EYE_X] = stPoints[STHumanAction.POS_LEFT_EYE].getX() / width;
-//                    point[i][LEFT_EYE_Y] = stPoints[STHumanAction.POS_LEFT_EYE].getY() / height;
-//                    point[i][RIGHT_EYE_X] = stPoints[STHumanAction.POS_RIGHT_EYE].getX() / width;
-//                    point[i][RIGHT_EYE_Y] = stPoints[STHumanAction.POS_RIGHT_EYE].getY() / height;
-//                    point[i][MOUTH_X] = stPoints[STHumanAction.POS_MOUTH].getX() / width;
-//                    point[i][MOUTH_Y] = stPoints[STHumanAction.POS_MOUTH].getY() / height;
-//                }
-
-
-//                if (effect != null) {
-//                    recorder.setFaces(point);
-//                }
             }
 
             @Override
@@ -357,13 +317,13 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
 
             @Override
             public void onComplete(boolean validClip, long clipDuration) {
-                Log.d("EncoderInputManager", "call onComplete isValid " +validClip);
+                Log.d("EncoderInputManager", "call onComplete isValid " + validClip);
                 handleStopCallback(validClip, clipDuration);
 
-                if (clipManager.getDuration() >= clipManager.getMaxDuration()) {
+                if (isMaxDuration) {
+                    isMaxDuration = false;
                     finishRecording();
                 }
-
             }
 
             @Override
@@ -395,6 +355,8 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
 
             @Override
             public void onMaxDuration() {
+                isMaxDuration = true;
+                compeleteBtn.setEnabled(false);
                 handleRecordStop();
             }
 
@@ -413,13 +375,14 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        restoreConflictEffect();
                         if (effect != null) {
                             addEffectToRecord(effect.getPath());     //因为底层在onpause的时候会做资源回收，所以初始化完成的时候要做资源的恢复
                         }
                         String path = Common.QU_DIR + "maohuzi";
-                        final EffectPaster paster  = new EffectPaster(path);
+                        final EffectPaster paster = new EffectPaster(path);
                         paster.isTrack = false;
-//                        EffectImage image = new EffectImage("/sdcard/icon_record_press.png");
+//                        EffectImage image = new EffectImage("/sdcard/aliyun_svideo_icon_record_pressn_record_press.png");
 //                        image.width = 0.2f;
 //                        image.height = 0.2f;
 //                        image.x = 0.2f;
@@ -467,7 +430,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                     outputStream.write(data);
                     outputStream.flush();
                     outputStream.close();
-                }catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 runOnUiThread(new Runnable() {
@@ -509,39 +472,59 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                 return scaledId;
             }
         });
+//        recorder.setOnAudioCallback(new OnAudioCallBack() {
+//            @Override
+//            public void onAudioDataBack(byte[] data, int lenght) {
+//                byte[] outputData =  mResample.from441To160(data,lenght);
+//                try {
+//                    dos.write(outputData);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
         recorder.setEncoderInfoCallback(new EncoderInfoCallback() {
             @Override
             public void onEncoderInfoBack(EncoderInfo info) {
-                Log.d(TAG,info.toString());
+                Log.d(TAG, info.toString());
             }
         });
+        recorder.setFaceTrackInternalMaxFaceCount(2);
         switchLightBtnState();
         rateStandardTxt.performClick();
         recordTimelineView.setMaxDuration(clipManager.getMaxDuration());
         recordTimelineView.setMinDuration(clipManager.getMinDuration());
     }
 
+    /**
+     * 恢复冲突的特效，这些特效都是会彼此冲突的，比如滤镜和MV，因为MV中也有滤镜效果，所以MV和滤镜的添加顺序
+     * 会影响最终产生视频的效果，在恢复时必须严格按照用户的操作顺序来恢复，
+     * 这样就需要维护一个添加过的特效类的列表，然后按照列表顺序
+     * 去恢复
+     */
+    private void restoreConflictEffect() {
+        if (!mConflictEffects.isEmpty()) {
+            for (Map.Entry<Object, Integer> entry : mConflictEffects.entrySet()) {
+                switch (entry.getValue()) {
+                    case TYPE_FILTER:
+                        recorder.applyFilter((EffectFilter) entry.getKey());
+                        break;
+                    case TYPE_MV:
+                        recorder.applyMv((EffectBean) entry.getKey());
+                        break;
+                    case TYPE_MUSIC:
+                        EffectBean music = (EffectBean) entry.getKey();
+                        recorder.setMusic(music.getPath(), music.getStartTime(), music.getDuration());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
     boolean isUseNative = true;
 
-
-    private int getOrientation(int rotate) {
-        int dir = 0;
-        switch (rotate) {
-            case 0:
-                dir = STRotateType.ST_CLOCKWISE_ROTATE_0;
-                break;
-            case 90:
-                dir = STRotateType.ST_CLOCKWISE_ROTATE_90;
-                break;
-            case 180:
-                dir = STRotateType.ST_CLOCKWISE_ROTATE_180;
-                break;
-            case 270:
-                dir = STRotateType.ST_CLOCKWISE_ROTATE_270;
-                break;
-        }
-        return dir;
-    }
 
     private int getPictureRotation() {
         int orientation = orientationDetector.getOrientation();
@@ -652,6 +635,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
+                            initPasterResourceLocal();
                         }
                         addConstantPaster();
                         initPasterView();
@@ -660,6 +644,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                     @Override
                     public void onFailure(int errorCode, String msg) {
                         super.onFailure(errorCode, msg);
+                        initPasterResourceLocal();
                     }
                 });
     }
@@ -695,6 +680,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
             protected void onPostExecute(Object o) {
                 waitingLayout.setVisibility(View.GONE);
                 initPasterResource();
+                initAssetPath();
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -765,7 +751,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
 //        fanProgressBar.setOutRadius(itemWidth / 2 - OUT_STROKE_WIDTH / 2);
 //        fanProgressBar.setOffset(OUT_STROKE_WIDTH / 2, OUT_STROKE_WIDTH / 2);
 //        fanProgressBar.setOutStrokeWidth(OUT_STROKE_WIDTH);
-        FrameLayout.LayoutParams recordBgLp = (FrameLayout.LayoutParams) recordBg.getLayoutParams();
+        final FrameLayout.LayoutParams recordBgLp = (FrameLayout.LayoutParams) recordBg.getLayoutParams();
         recordBgLp.width = itemWidth;
         recordBgLp.height = itemWidth;
         recordBg.setLayoutParams(recordBgLp);
@@ -799,6 +785,58 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
         rateBar = (LinearLayout) findViewById(R.id.aliyun_rate_bar);
         gestureDetector = new GestureDetector(this, this);
         scaleGestureDetector = new ScaleGestureDetector(this, this);
+        recordLayoutBottom = findViewById(R.id.aliyun_record_layout_bottom);
+        imvForms = MVResourceUtil.fetchMvLocalResource();
+
+        magicMusic = findViewById(R.id.aliyun_mv);
+        magicMusic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (mGlSurfaceWidth == 0 || mGlSurfaceHeight == 0) {
+                    mGlSurfaceWidth = glSurfaceView.getWidth();
+                    mGlSurfaceHeight = glSurfaceView.getHeight();
+                }
+                recordLayoutBottom.setVisibility(View.GONE);
+                final MVChooser mvChooser = MVChooser.newInstance();
+                mvChooser.setSelectedEffectIndex(mSelectedMvPos);
+                mvChooser.setChooseData(imvForms);
+                mvChooser.setCancelable(true);
+                mvChooser.setChooseListener(new MVChooser.OnEffectChangeListener() {
+                    @Override
+                    public void onEffectChanged(MvForm effect) {
+                        if (effect == null) {
+                            recorder.applyMv(null);
+                            if (mCurrMv != null) {
+                                mConflictEffects.remove(mCurrMv);
+                                mCurrMv = null;
+                            }
+                        } else {
+                            EffectBean mv = new EffectBean();
+                            String path = MVResourceUtil.getMVPath(effect.list, mGlSurfaceWidth, mGlSurfaceHeight);
+                            mv.setPath(path);
+                            recorder.applyMv(mv);
+                            if(path == null){
+                                mConflictEffects.remove(mCurrMv);
+                                mCurrMv = null;
+                            }else{
+                                mConflictEffects.put(mv, TYPE_MV);
+                                mCurrMv = mv;
+                            }
+
+                        }
+                    }
+                });
+                mvChooser.setOnDismissListener(new MVChooser.OnChooseDismissListener() {
+                    @Override
+                    public void onChooseDismiss() {
+                        recordLayoutBottom.setVisibility(View.VISIBLE);
+                        mSelectedMvPos = mvChooser.getSelectedEffectIndex();
+                    }
+                });
+                mvChooser.show(getFragmentManager(), "mv_chooser");
+            }
+        });
     }
 
     private void calculateItemWidth() {
@@ -904,7 +942,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
     @Override
     protected void onPause() {
         super.onPause();
-        if(isRecording){
+        if (isRecording) {
             recorder.cancelRecording();
         }
         recorder.stopPreview();
@@ -921,18 +959,25 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
     @Override
     protected void onStart() {
         super.onStart();
+        compeleteBtn.setEnabled(true);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         recorder.destroy();
-        mSTHumanActionNative.destroyInstance();
+//        try {
+//            dos.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         AliyunRecorderCreator.destroyRecorderInstance();
         if (orientationDetector != null) {
             orientationDetector.setOrientationChangedListener(null);
         }
     }
+
+    private EffectBean music;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -940,12 +985,37 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
             if (resultCode == Activity.RESULT_OK) {
                 String path = data.getStringExtra(MUSIC_PATH);
                 int startTime = data.getIntExtra(MUSIC_START_TIME, 0);
-                recorder.setMusic(path, startTime, clipManager.getMaxDuration());
+                if(music != null){
+                    mConflictEffects.remove(music);
+                }
+                music = new EffectBean();
+                music.setPath(path);
+                music.setStartTime(startTime);
+                music.setDuration(clipManager.getMaxDuration());
+                mConflictEffects.put(music, TYPE_MUSIC);
+//                glSurfaceView.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        recorder.setMusic(music.getPath(), music.getStartTime(), music.getDuration());
+//                    }
+//                }, 3000);
+//
+//                glSurfaceView.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        recorder.setMusic(music.getPath(), music.getStartTime(), music.getDuration());
+//                    }
+//                }, 4000);
+//                recorder.setMusic(path, startTime, clipManager.getMaxDuration());
             } else if (resultCode == Activity.RESULT_CANCELED) {
+                if(music != null){
+                    mConflictEffects.remove(music);
+                }
                 recorder.setMusic(null, 0, 0);
             }
         } else if (requestCode == REQUEST_CODE_PLAY) {
             if (resultCode == Activity.RESULT_OK) {
+                clipManager.deleteAllPart();
                 finish();
             }
         }
@@ -1061,6 +1131,8 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                     v.setSelected(true);
                     v.setActivated(true);
                     break;
+                default:
+                    break;
             }
             recorder.setLight(flashType);
         } else if (v == backBtn) {
@@ -1094,9 +1166,11 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
             }
             if (clipManager.getDuration() == 0) {
                 musicBtn.setVisibility(View.VISIBLE);
+                magicMusic.setVisibility(View.VISIBLE);
+                recorder.restartMv();
             }
         } else if (v == compeleteBtn) {
-            if (v.isSelected()) {
+            if (v.isSelected() && waitingLayout.getVisibility() != View.VISIBLE) {
                 finishRecording();
             }
         }
@@ -1165,28 +1239,29 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
         }
         if (velocityX > MAX_SWITCH_VELOCITY) {
             filterIndex++;
-            if (filterIndex >= eff_dirs.length) {
+            if (filterIndex >= mEffDirs.length) {
                 filterIndex = 0;
             }
         } else if (velocityX < -MAX_SWITCH_VELOCITY) {
             filterIndex--;
             if (filterIndex < 0) {
-                filterIndex = eff_dirs.length - 1;
+                filterIndex = mEffDirs.length - 1;
             }
         } else {
             return true;
         }
-//        if(!new File(eff_dirs[filterIndex]).exists()){
-//            return false;
-//        }
-        EffectFilter effectFilter = new EffectFilter(eff_dirs[filterIndex]);
-        recorder.applyFilter(effectFilter);
-        showFilter(effectFilter.getName());
+        mCurrFilter = new EffectFilter(mEffDirs[filterIndex]);
+        recorder.applyFilter(mCurrFilter);
+        mConflictEffects.put(mCurrFilter, TYPE_FILTER);
+        showFilter(mCurrFilter.getName());
         return false;
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if (waitingLayout.getVisibility() == View.VISIBLE) {
+            return true;
+        }
         if (v == glSurfaceView) {
             gestureDetector.onTouchEvent(event);
             scaleGestureDetector.onTouchEvent(event);
@@ -1209,6 +1284,12 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
                     handleRecordStart();
 //                    recorder.setMute(true);
                     recorder.startRecording();
+                    if (clipManager.getPartCount() == 0) {
+                        recorder.restartMv();
+                    } else {
+                        recorder.resumeMv();
+                    }
+
                     if (flashType == FlashType.ON && cameraType == CameraType.BACK) {
                         recorder.setLight(FlashType.TORCH);
                     }
@@ -1219,6 +1300,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
 //                    recorder.takePicture(true);
                 }
                 recorder.stopRecording();
+                recorder.pauseMv();
                 handleRecordStop();
             }
         }
@@ -1271,6 +1353,7 @@ public class CameraDemo extends Activity implements View.OnClickListener, Gestur
         recordDurationTxt.setVisibility(View.VISIBLE);
         recordStopped = false;
         musicBtn.setVisibility(View.GONE);
+        magicMusic.setVisibility(View.GONE);
         pasterView.setVisibility(View.INVISIBLE);
         switchCameraBtn.setVisibility(View.INVISIBLE);
         if (cameraType == CameraType.BACK) {

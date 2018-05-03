@@ -41,7 +41,7 @@ public class PaintMenuView {
     }
     public View getPaintMenu(Context context) {
         mContext = context;
-        mView = View.inflate(context, R.layout.paint_view, null);
+        mView = View.inflate(context, R.layout.aliyun_svideo_paint_view, null);
         mListView = (RecyclerView)mView.findViewById(R.id.color_list);
         mCacnel = (ImageView) mView.findViewById(R.id.cancel);
         mUndo = (ImageView) mView.findViewById(R.id.undo);

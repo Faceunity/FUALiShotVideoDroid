@@ -57,7 +57,7 @@ public class PasterPreviewDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.layout_paster_preview, container);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.aliyun_svideo_layout_paster_preview, container);
 
         WebView webView = (WebView) view.findViewById(R.id.webview);
         View close = view.findViewById(R.id.close);

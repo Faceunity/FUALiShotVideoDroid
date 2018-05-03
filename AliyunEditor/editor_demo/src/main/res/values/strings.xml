@@ -51,5 +51,7 @@
     <string name="input_video_desc">你可以在合成中添加视频描述...</string>
     <string name="edit_cover">选择封面</string>
     <string name="my_video">我的视频</string>
+    <string name="aliyun_svideo_filter">滤镜</string>
+    <string name="aliyun_svideo_effect">特效</string>
 </resources>
 

@@ -48,4 +48,8 @@
     <string name="aliyun_rate_fast">快</string>
     <string name="aliyun_rate_very_fast">极快</string>
     <string name="aliyun_delete">回删</string>
+    <string name="aliyun_video_codec">视频编码方式</string>
+    <string name="aliyun_hardware_encoder">硬编</string>
+    <string name="aliyun_openh264_encoder">OpenH264软编</string>
+    <string name="aliyun_ffmpeg_encoder">FFmpeg软编</string>
 </resources>
